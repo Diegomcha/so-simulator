@@ -1,0 +1,10 @@
+// Program that stores the even integer numbers between 21 and 43 in memaddr 122
+55              // Number of the memory slots the program takes
+ADD 22 0        // Set the accumulator to 22 the first even number in range
+WRITE 122       // Write the accumulator to the memaddr 122
+MEMADD 2 122 	// Next even number // START OF LOOP
+WRITE 122		// Write it to 122
+MEMADD -42 122	// Check end of loop
+ZJUMP 2 		// If we reached the end exit the loop
+JUMP -4			// Execute the loop
+HALT			// Halt the processor
