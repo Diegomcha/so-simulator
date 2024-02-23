@@ -3,3 +3,6 @@
 
 # Executables
 **/Simulator
+
+# Zip files
+**/*.zip
