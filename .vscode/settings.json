@@ -2,5 +2,9 @@
   "files.exclude": {
     "**/*.o": true
   },
-  "conventionalCommits.scopes": ["v0"]
+  "conventionalCommits.scopes": ["v0", "v1"],
+  "files.associations": {
+    "processorProp.C": "cpp",
+    "*.def": "c"
+  }
 }
