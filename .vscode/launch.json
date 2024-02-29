@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/V1/Simulator",
-      "args": ["programTestMemAdd"],
+      "args": ["prog-V1-E3", "prog-V1-E3", "prog-V1-E3", "prog-V1-E3"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/V1",
       "environment": [],
