@@ -65,6 +65,7 @@ extern int MAINMEMORYSIZE;
 
 int PROCESSTABLEMAXSIZE = 4;
 
+// For debug messages
 char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
 
 // Initial set of tasks of the OS
@@ -237,7 +238,6 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 // always obtains the chunk whose position in memory is equal to the processor identifier
 int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 {
-
 	if (processSize > MAINMEMORYSECTIONSIZE)
 		return TOOBIGPROCESS;
 
@@ -291,7 +291,6 @@ void OperatingSystem_MoveToTheREADYState(int PID)
 // depending on processes priority, the STS just selects the process in front of the READY queue
 int OperatingSystem_ShortTermScheduler()
 {
-
 	int selectedProcess;
 
 	selectedProcess = OperatingSystem_ExtractFromReadyToRun();
@@ -302,7 +301,6 @@ int OperatingSystem_ShortTermScheduler()
 // Return PID of more priority process in the READY queue
 int OperatingSystem_ExtractFromReadyToRun()
 {
-
 	int selectedProcess = NOPROCESS;
 
 	selectedProcess = Heap_poll(readyToRunQueue[ALLPROCESSESQUEUE], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[ALLPROCESSESQUEUE]));
@@ -328,7 +326,6 @@ void OperatingSystem_Dispatch(int PID)
 // Modify hardware registers with appropriate values for the process identified by PID
 void OperatingSystem_RestoreContext(int PID)
 {
-
 	// New values for the CPU registers are obtained from the PCB
 	Processor_PushInSystemStack(processTable[PID].copyOfPCRegister);
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
@@ -342,7 +339,6 @@ void OperatingSystem_RestoreContext(int PID)
 // Function invoked when the executing process leaves the CPU
 void OperatingSystem_PreemptRunningProcess()
 {
-
 	// Save in the process' PCB essential values stored in hardware registers and the system stack
 	OperatingSystem_SaveContext(executingProcessID);
 	// Change the process' state
@@ -354,7 +350,6 @@ void OperatingSystem_PreemptRunningProcess()
 // Save in the process' PCB essential values stored in hardware registers and the system stack
 void OperatingSystem_SaveContext(int PID)
 {
-
 	// Load PSW saved for interrupt manager
 	processTable[PID].copyOfPSWRegister = Processor_PopFromSystemStack();
 
@@ -368,7 +363,6 @@ void OperatingSystem_SaveContext(int PID)
 // Exception management routine
 void OperatingSystem_HandleException()
 {
-
 	// Show message "Process [executingProcessID] has generated an exception and is terminating\n"
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 71, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 
@@ -415,7 +409,6 @@ void OperatingSystem_TerminateExecutingProcess()
 // System call management routine
 void OperatingSystem_HandleSystemCall()
 {
-
 	int systemCallID;
 
 	// Register A contains the identifier of the issued system call
