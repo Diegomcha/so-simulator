@@ -65,8 +65,6 @@ extern int MAINMEMORYSIZE;
 
 int PROCESSTABLEMAXSIZE = 4;
 
-char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
-
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int programsFromFileIndex)
 {
@@ -83,7 +81,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	MAINMEMORYSECTIONSIZE = OS_address_base / PROCESSTABLEMAXSIZE;
 
 	if (initialPID < 0) // if not assigned in options...
-		initialPID = PROCESSTABLEMAXSIZE - 1;
+		initialPID = 0;
 
 	// Space for the processTable
 	processTable = (PCB *)malloc(PROCESSTABLEMAXSIZE * sizeof(PCB));
@@ -247,9 +245,6 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 // Assign initial values to all fields inside the PCB
 void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex)
 {
-	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 111, SYSPROC, PID, statesNames[NEW], programList[processPLIndex]->executableName);
-
 	processTable[PID].busy = 1;
 	processTable[PID].initialPhysicalAddress = initialPhysicalAddress;
 	processTable[PID].processSize = processSize;
@@ -274,16 +269,10 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 // a queue of identifiers of READY processes
 void OperatingSystem_MoveToTheREADYState(int PID)
 {
-	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
-
 	if (Heap_add(PID, readyToRunQueue[ALLPROCESSESQUEUE], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[ALLPROCESSESQUEUE])) >= 0)
 	{
 		processTable[PID].state = READY;
 	}
-
-	// Print ready to run queue
-	OperatingSystem_PrintReadyToRunQueue();
 }
 
 // The STS is responsible of deciding which process to execute when specific events occur.
@@ -314,10 +303,7 @@ int OperatingSystem_ExtractFromReadyToRun()
 // Function that assigns the processor to a process
 void OperatingSystem_Dispatch(int PID)
 {
-	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[EXECUTING]);
-
-	//  The process identified by PID becomes the current executing process
+	// The process identified by PID becomes the current executing process
 	executingProcessID = PID;
 	// Change the process' state
 	processTable[PID].state = EXECUTING;
@@ -328,7 +314,6 @@ void OperatingSystem_Dispatch(int PID)
 // Modify hardware registers with appropriate values for the process identified by PID
 void OperatingSystem_RestoreContext(int PID)
 {
-
 	// New values for the CPU registers are obtained from the PCB
 	Processor_PushInSystemStack(processTable[PID].copyOfPCRegister);
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
@@ -342,7 +327,6 @@ void OperatingSystem_RestoreContext(int PID)
 // Function invoked when the executing process leaves the CPU
 void OperatingSystem_PreemptRunningProcess()
 {
-
 	// Save in the process' PCB essential values stored in hardware registers and the system stack
 	OperatingSystem_SaveContext(executingProcessID);
 	// Change the process' state
@@ -354,7 +338,6 @@ void OperatingSystem_PreemptRunningProcess()
 // Save in the process' PCB essential values stored in hardware registers and the system stack
 void OperatingSystem_SaveContext(int PID)
 {
-
 	// Load PSW saved for interrupt manager
 	processTable[PID].copyOfPSWRegister = Processor_PopFromSystemStack();
 
@@ -368,7 +351,6 @@ void OperatingSystem_SaveContext(int PID)
 // Exception management routine
 void OperatingSystem_HandleException()
 {
-
 	// Show message "Process [executingProcessID] has generated an exception and is terminating\n"
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 71, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 
@@ -378,9 +360,6 @@ void OperatingSystem_HandleException()
 // All tasks regarding the removal of the executing process
 void OperatingSystem_TerminateExecutingProcess()
 {
-	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
-
 	processTable[executingProcessID].state = EXIT;
 
 	if (executingProcessID == sipID)
@@ -447,20 +426,5 @@ void OperatingSystem_InterruptLogic(int entryPoint)
 	case EXCEPTION_BIT: // EXCEPTION_BIT=6
 		OperatingSystem_HandleException();
 		break;
-	}
-}
-
-void OperatingSystem_PrintReadyToRunQueue()
-{
-	// Print title
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 106, SHORTTERMSCHEDULE);
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 107, SHORTTERMSCHEDULE);
-	const int last = numberOfReadyToRunProcesses[ALLPROCESSESQUEUE] - 1;
-
-	// Print queue
-	for (int i = 0; i <= last; i++)
-	{
-		int pid = readyToRunQueue[ALLPROCESSESQUEUE][i].info;
-		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, last != i ? 108 : 109, SHORTTERMSCHEDULE, pid, processTable[pid].priority);
 	}
 }
