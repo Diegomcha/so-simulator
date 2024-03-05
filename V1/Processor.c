@@ -210,9 +210,10 @@ void Processor_DecodeAndExecuteInstruction() {
 			// Tell the MMU controller to read
 			registerCTRL_CPU=CTRLREAD;
 			Buses_write_ControlBus_From_To(CPU,MMU);
-			
-			// Set the accumulator register to the addition of the operand1 and memory contents
+
+			// Set the accumulator register to the addition of the operand1 and memory contents, checking overflow
 			registerAccumulator_CPU = operand1 + registerMBR_CPU.cell;
+			Processor_CheckOverflow(operand1,registerMBR_CPU.cell, REGISTERACCUMULATOR_CPU); // Check overflow
 
 			// Increment PC
 			registerPC_CPU++;

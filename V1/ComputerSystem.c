@@ -72,14 +72,14 @@ void ComputerSystem_PowerOff()
 void ComputerSystem_PrintProgramList()
 {
 	// Print title
-	ComputerSystem_DebugMessage(1, 101, INIT);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 101, INIT);
 
 	// Print all programs
 	int i = 1; // Skip SIP
 	while (programList[i] != NULL)
 	{
 		// Print program information
-		ComputerSystem_DebugMessage(0, 102, INIT, programList[i]->executableName, programList[i]->arrivalTime);
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 102, INIT, programList[i]->executableName, programList[i]->arrivalTime);
 
 		// Go to the next program
 		i++;

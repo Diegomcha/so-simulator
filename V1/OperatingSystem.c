@@ -165,13 +165,13 @@ int OperatingSystem_LongTermScheduler()
 
 		// Check there is free size in the programList
 		if (PID == NOFREEENTRY)
-			ComputerSystem_DebugMessage(0, 103, ERROR, programList[i]->executableName);
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 103, ERROR, programList[i]->executableName);
 		// Check the size of the program
 		else if (PID == TOOBIGPROCESS)
-			ComputerSystem_DebugMessage(0, 105, ERROR, programList[i]->executableName);
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 105, ERROR, programList[i]->executableName);
 		// Check for other errors
 		else if (PID < 0)
-			ComputerSystem_DebugMessage(0, 104, ERROR, programList[i]->executableName, ERROR_MSG[abs(PID)]);
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, ERROR_MSG[abs(PID)]);
 		else
 		{
 			numberOfSuccessfullyCreatedProcesses++;
