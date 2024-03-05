@@ -65,8 +65,6 @@ extern int MAINMEMORYSIZE;
 
 int PROCESSTABLEMAXSIZE = 4;
 
-const char *ERROR_MSG[] = {NULL, "it does not exist", "invalid priority or size"};
-
 char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
 
 // Initial set of tasks of the OS
@@ -163,17 +161,17 @@ int OperatingSystem_LongTermScheduler()
 	{
 		PID = OperatingSystem_CreateProcess(i);
 
-		// Check there is free size in the programList
+		// Handle process creation errors and display appropriate messages
 		if (PID == NOFREEENTRY)
 			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 103, ERROR, programList[i]->executableName);
-		// Check the size of the program
 		else if (PID == TOOBIGPROCESS)
 			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 105, ERROR, programList[i]->executableName);
-		// Check for other errors
-		else if (PID < 0)
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, ERROR_MSG[abs(PID)]);
+		else if (PID == PROGRAMDOESNOTEXIST)
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "it does not exist");
+		else if (PID == PROGRAMNOTVALID)
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "invalid priority or size");
 		else
-		{
+		{ // Process successfully created
 			numberOfSuccessfullyCreatedProcesses++;
 			if (programList[i]->type == USERPROGRAM)
 				numberOfNotTerminatedUserProcesses++;
@@ -189,7 +187,6 @@ int OperatingSystem_LongTermScheduler()
 // This function creates a process from an executable program
 int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 {
-
 	int PID;
 	int processSize;
 	int loadingPhysicalAddress;
@@ -197,38 +194,35 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	FILE *programFile;
 	PROGRAMS_DATA *executableProgram = programList[indexOfExecutableProgram];
 
-	// Obtain a process ID
+	// Obtain a process ID & reject new programs if an error ocurred
 	PID = OperatingSystem_ObtainAnEntryInTheProcessTable();
+	if (PID < 0)
+		return PID; // NOFREEENTRY
 
-	// Reject new programs if there is not enough space
-	if (PID == NOFREEENTRY)
-		return NOFREEENTRY;
-
-	// Check if programFile exists
+	// Get program file & check if programFile exists
 	programFile = fopen(executableProgram->executableName, "r");
 	if (programFile == NULL)
 		return PROGRAMDOESNOTEXIST;
 
-	// Obtain the memory requirements of the program
+	// Obtain the memory requirements of the program & check for errors
 	processSize = OperatingSystem_ObtainProgramSize(programFile);
+	if (processSize < 0)
+		return processSize; // PROGRAMNOTVALID
 
-	// Obtain the priority for the process
+	// Obtain the priority for the process & check for errors
 	priority = OperatingSystem_ObtainPriority(programFile);
+	if (priority < 0)
+		return priority; // PROGRAMNOTVALID
 
-	// Check the program size and priority are correct
-	if (processSize == PROGRAMNOTVALID || priority == PROGRAMNOTVALID)
-		return PROGRAMNOTVALID;
-
-	// Check program size is not bigger than allowed
-	if (processSize > MAINMEMORYSECTIONSIZE)
-		return TOOBIGPROCESS;
-
-	// Obtain enough memory space
+	// Obtain enough memory space if available
 	loadingPhysicalAddress = OperatingSystem_ObtainMainMemory(processSize, PID);
+	if (loadingPhysicalAddress < 0)
+		return loadingPhysicalAddress; // TOOBIGPROCESS
 
-	// Load program in the allocated memory and check if the program specifies a correct size
-	if (OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize) == TOOBIGPROCESS)
-		return TOOBIGPROCESS;
+	// Load program in the allocated memory if possible
+	int loadStatus = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
+	if (loadStatus < 0)
+		return loadStatus; // TOOBIGPROCESS
 
 	// PCB initialization
 	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
