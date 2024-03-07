@@ -164,13 +164,13 @@ int OperatingSystem_LongTermScheduler()
 
 		// Handle process creation errors and display appropriate messages
 		if (PID == NOFREEENTRY)
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 103, ERROR, programList[i]->executableName);
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 103, ERROR, programList[i]->executableName);
 		else if (PID == TOOBIGPROCESS)
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 105, ERROR, programList[i]->executableName);
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 105, ERROR, programList[i]->executableName);
 		else if (PID == PROGRAMDOESNOTEXIST)
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "it does not exist");
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "it does not exist");
 		else if (PID == PROGRAMNOTVALID)
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "invalid priority or size");
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "invalid priority or size");
 		else
 		{ // Process successfully created
 			numberOfSuccessfullyCreatedProcesses++;
