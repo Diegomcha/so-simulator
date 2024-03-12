@@ -9,13 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/V1/Simulator",
-      "args": [
-        "programWhichDoesNotExist",
-        "programWithoutSizeAndPrio",
-        "programTooBig",
-        "programWithTooManyInstructions",
-        "programWithSubroutine"
-      ],
+      "args": ["miau"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/V1",
       "environment": [],

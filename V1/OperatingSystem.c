@@ -131,7 +131,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	OperatingSystem_PrepareDaemons(programsFromFileIndex);
 
 	// Create all user processes from the information given in the command line
-	OperatingSystem_LongTermScheduler();
+	int numCreatedProcesses = OperatingSystem_LongTermScheduler();
 
 	if (strcmp(programList[processTable[sipID].programListIndex]->executableName, "SystemIdleProcess") && processTable[sipID].state == READY)
 	{
@@ -151,6 +151,10 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
+
+	// If we only managed to create SIP terminate execution
+	if (numCreatedProcesses == 1)
+		OperatingSystem_TerminateExecutingProcess();
 }
 
 // The LTS is responsible of the admission of new processes in the system.
