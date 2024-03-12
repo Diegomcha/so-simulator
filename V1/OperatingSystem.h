@@ -4,7 +4,6 @@
 #include "ComputerSystem.h"
 #include <stdio.h>
 
-
 #define SUCCESS 1
 #define PROGRAMDOESNOTEXIST -1
 #define PROGRAMNOTVALID -2
@@ -16,19 +15,38 @@
 
 // Number of queues of ready to run processes, initially one queue...
 #define NUMBEROFQUEUES 1
-enum TypeOfReadyToRunProcessQueues { ALLPROCESSESQUEUE }; 
+enum TypeOfReadyToRunProcessQueues
+{
+	ALLPROCESSESQUEUE
+};
 
 // Contains the possible type of programs
-enum ProgramTypes { USERPROGRAM=100, DAEMONPROGRAM }; 
+enum ProgramTypes
+{
+	USERPROGRAM = 100,
+	DAEMONPROGRAM
+};
 
 // Enumerated type containing all the possible process states
-enum ProcessStates { NEW, READY, EXECUTING, BLOCKED, EXIT};
+enum ProcessStates
+{
+	NEW,
+	READY,
+	EXECUTING,
+	BLOCKED,
+	EXIT
+};
 
 // Enumerated type containing the list of system calls and their numeric identifiers
-enum SystemCallIdentifiers { SYSCALL_END=3, SYSCALL_PRINTEXECPID=5};
+enum SystemCallIdentifiers
+{
+	SYSCALL_END = 3,
+	SYSCALL_PRINTEXECPID = 5
+};
 
 // A PCB contains all of the information about a process that is needed by the OS
-typedef struct {
+typedef struct
+{
 	int busy;
 	int initialPhysicalAddress;
 	int processSize;
@@ -42,7 +60,6 @@ typedef struct {
 
 // These "extern" declaration enables other source code files to gain access
 // to the variable listed
-
 
 // Functions prototypes
 void OperatingSystem_Initialize(int);
