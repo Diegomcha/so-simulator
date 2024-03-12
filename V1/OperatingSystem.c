@@ -52,7 +52,10 @@ int initialPID = -1;
 // Array that contains the identifiers of the READY processes
 // heapItem readyToRunQueue[NUMBEROFQUEUES][PROCESSTABLEMAXSIZE];
 heapItem *readyToRunQueue[NUMBEROFQUEUES];
-int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0};
+// int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0};
+int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0, 0};
+
+char *queueNames[NUMBEROFQUEUES] = {"USER", "DAEMONS"};
 
 // Variable containing the number of not terminated user processes
 int numberOfNotTerminatedUserProcesses = 0;
@@ -90,7 +93,8 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	processTable = (PCB *)malloc(PROCESSTABLEMAXSIZE * sizeof(PCB));
 
 	// Space for the ready to run queues (one queue initially...)
-	readyToRunQueue[ALLPROCESSESQUEUE] = Heap_create(PROCESSTABLEMAXSIZE);
+	for (int i = 0; i < NUMBEROFQUEUES; i++)
+		readyToRunQueue[i] = Heap_create(PROCESSTABLEMAXSIZE);
 
 	programFile = fopen("OperatingSystemCode", "r");
 	if (programFile == NULL)
@@ -260,11 +264,13 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM)
 	{
+		processTable[PID].queueID = DAEMONSQUEUE;
 		processTable[PID].copyOfPCRegister = initialPhysicalAddress;
 		processTable[PID].copyOfPSWRegister = ((unsigned int)1) << EXECUTION_MODE_BIT;
 	}
 	else
 	{
+		processTable[PID].queueID = USERPROCESSQUEUE;
 		processTable[PID].copyOfPCRegister = 0;
 		processTable[PID].copyOfPSWRegister = 0;
 	}
@@ -277,7 +283,7 @@ void OperatingSystem_MoveToTheREADYState(int PID)
 	// Track state changes
 	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
 
-	if (Heap_add(PID, readyToRunQueue[ALLPROCESSESQUEUE], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[ALLPROCESSESQUEUE])) >= 0)
+	if (Heap_add(PID, readyToRunQueue[processTable[PID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[PID].queueID])) >= 0)
 	{
 		processTable[PID].state = READY;
 	}
@@ -301,9 +307,18 @@ int OperatingSystem_ShortTermScheduler()
 // Return PID of more priority process in the READY queue
 int OperatingSystem_ExtractFromReadyToRun()
 {
+	// Variables to extract the ready process
 	int selectedProcess = NOPROCESS;
+	int currentQID = 0;
 
-	selectedProcess = Heap_poll(readyToRunQueue[ALLPROCESSESQUEUE], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[ALLPROCESSESQUEUE]));
+	// Extract a process if we have more queues and we dont have a process yet
+	while (selectedProcess == NOPROCESS && currentQID < NUMBEROFQUEUES)
+	{
+		// Get the process from the queue if exists
+		selectedProcess = Heap_poll(readyToRunQueue[currentQID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[currentQID]));
+		// Move to the next queue
+		currentQID++;
+	}
 
 	// Return most priority process or NOPROCESS if empty queue
 	return selectedProcess;
@@ -447,13 +462,27 @@ void OperatingSystem_PrintReadyToRunQueue()
 {
 	// Print title
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 106, SHORTTERMSCHEDULE);
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 107, SHORTTERMSCHEDULE);
-	const int last = numberOfReadyToRunProcesses[ALLPROCESSESQUEUE] - 1;
 
-	// Print queue
-	for (int i = 0; i <= last; i++)
+	// Prepare last variable
+	int last;
+
+	// Print queues
+	for (int id = 0; id < NUMBEROFQUEUES; id++)
 	{
-		int pid = readyToRunQueue[ALLPROCESSESQUEUE][i].info;
-		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, last != i ? 108 : 109, SHORTTERMSCHEDULE, pid, processTable[pid].priority);
+		// Print title
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 107, SHORTTERMSCHEDULE, queueNames[id]);
+
+		// Get last element
+		last = numberOfReadyToRunProcesses[id] - 1;
+
+		// Print queue elements
+		for (int i = 0; i <= last; i++)
+		{
+			int pid = readyToRunQueue[id][i].info;
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, last != i ? 108 : 109, SHORTTERMSCHEDULE, pid, processTable[pid].priority);
+		}
+
+		// Print new line
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 112, SHORTTERMSCHEDULE);
 	}
 }

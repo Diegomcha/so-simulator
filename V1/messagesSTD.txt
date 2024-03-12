@@ -9,8 +9,9 @@
 104,@RERROR: Program [%s] is not valid [--- %s ---]@@\n
 105,@RERROR: Program [%s] is too big@@\n
 106,Ready-to-run processes queue:\n
-107,\t\t
-108,[@G%d@@,%d], 
-109,[@G%d@@,%d]\n
+107,\t\t%s: 
+108,[@G%d@@,%d],
+109,[@G%d@@,%d]
 110,Process [@G%d - %s@@] moving from the [@G%s@@] state to the [@G%s@@] state\n
 111,Process [@G%d@@] created into the [@G%s@@] state, from program [@G%s@@]\n
+112,\n
