@@ -345,6 +345,9 @@ void OperatingSystem_RestoreContext(int PID)
 	Processor_PushInSystemStack(processTable[PID].copyOfPCRegister);
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
 	Processor_SetRegisterSP(processTable[PID].copyOfSPRegister);
+	Processor_SetAccumulator(processTable[PID].copyOfAccumulatorRegister);
+	Processor_SetRegisterA(processTable[PID].copyofRegisterA);
+	Processor_SetRegisterB(processTable[PID].copyofRegisterB);
 
 	// Same thing for the MMU registers
 	MMU_SetBase(processTable[PID].initialPhysicalAddress);
@@ -373,6 +376,15 @@ void OperatingSystem_SaveContext(int PID)
 
 	// Save RegisterSP
 	processTable[PID].copyOfSPRegister = Processor_GetRegisterSP();
+
+	// Save the accumulator
+	processTable[PID].copyOfAccumulatorRegister = Processor_GetAccumulator();
+
+	// Save the general purpose register A
+	processTable[PID].copyofRegisterA = Processor_GetRegisterA();
+
+	// Save the general purpose register B
+	processTable[PID].copyofRegisterB = Processor_GetRegisterB();
 }
 
 // Exception management routine
