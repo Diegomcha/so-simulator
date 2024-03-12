@@ -425,6 +425,7 @@ void OperatingSystem_TerminateExecutingProcess()
 void OperatingSystem_HandleSystemCall()
 {
 	int systemCallID;
+	int PID = NOPROCESS;
 
 	// Register A contains the identifier of the issued system call
 	systemCallID = Processor_GetRegisterC();
@@ -434,6 +435,32 @@ void OperatingSystem_HandleSystemCall()
 	case SYSCALL_PRINTEXECPID:
 		// Show message: "Process [executingProcessID] has the processor assigned\n"
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 72, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, Processor_GetRegisterA(), Processor_GetRegisterB());
+		break;
+
+	case SYSCALL_YIELD:
+		// Get process from the executing proccess queue if exists
+		PID = Heap_getFirst(readyToRunQueue[processTable[executingProcessID].queueID], numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]);
+
+		// Check priorities match
+		if (PID != NOPROCESS && processTable[executingProcessID].priority < processTable[PID].priority)
+			PID = NOPROCESS;
+
+		// Show error message if no equivalent process was found
+		if (PID == NOPROCESS)
+		{
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+			break;
+		}
+
+		// Perform the yield
+
+		// Save in the process' PCB essential values stored in hardware registers and the system stack
+		OperatingSystem_SaveContext(executingProcessID);
+		// Change the process' state
+		OperatingSystem_MoveToTheREADYState(executingProcessID);
+
+		// The processor is not assigned until the OS selects another process
+		executingProcessID = PID;
 		break;
 
 	case SYSCALL_END:

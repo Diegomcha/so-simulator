@@ -47,6 +47,7 @@ enum ProcessStates
 enum SystemCallIdentifiers
 {
 	SYSCALL_END = 3,
+	SYSCALL_YIELD = 4,
 	SYSCALL_PRINTEXECPID = 5
 };
 

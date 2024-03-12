@@ -1,0 +1,58 @@
+31 messages loaded from file messagesTCH.txt
+14 messages loaded from file messagesSTD.txt
+0 Asserts Loaded
+[0] STARTING simulation
+[0] User program list:
+	Program [programV1-2a] with arrival time [0]
+	Program [programV1-2b] with arrival time [0]
+	Program [programV1-2c] with arrival time [0]
+Process [3] created into the [NEW] state, from program [SystemIdleProcess]
+	[0] Process [3] created from program [SystemIdleProcess]
+Process [3 - SystemIdleProcess] moving from the [NEW] state to the [READY] state
+	[0] Ready-to-run processes queue:
+		USER: 
+		DAEMONS: [3,100]
+Process [0] created into the [NEW] state, from program [programV1-2a]
+	[0] Process [0] created from program [programV1-2a]
+Process [0 - programV1-2a] moving from the [NEW] state to the [READY] state
+	[0] Ready-to-run processes queue:
+		USER: [0,10]
+		DAEMONS: [3,100]
+Process [1] created into the [NEW] state, from program [programV1-2b]
+	[0] Process [1] created from program [programV1-2b]
+Process [1 - programV1-2b] moving from the [NEW] state to the [READY] state
+	[0] Ready-to-run processes queue:
+		USER: [0,10],[1,10]
+		DAEMONS: [3,100]
+Process [2] created into the [NEW] state, from program [programV1-2c]
+	[0] Process [2] created from program [programV1-2c]
+Process [2 - programV1-2c] moving from the [NEW] state to the [READY] state
+	[0] Ready-to-run processes queue:
+		USER: [2,5],[1,10],[0,10]
+		DAEMONS: [3,100]
+Process [2 - programV1-2c] moving from the [READY] state to the [EXECUTING] state
+[1] {0D 000 000} IRET 0 0 (PID: 2, PC: 0, Accumulator: 0, PSW: 0002 [--------------Z-])
+[2] {01 00A 005} ADD 10 5 (PID: 2, PC: 1, Accumulator: 15, PSW: 0000 [----------------])
+[3] {04 003 000} TRAP 3 0 (PID: 2, PC: 2, Accumulator: 15, PSW: 0000 [----------------])
+[4] {0C 002 000} OS 2 0 (PID: 2, PC: 242, Accumulator: 15, PSW: 0080 [--------X-------])
+	[5] Process [2 - programV1-2c] has requested to terminate
+Process [2 - programV1-2c] moving from the [EXECUTING] state to the [EXIT] state
+Process [0 - programV1-2a] moving from the [READY] state to the [EXECUTING] state
+[6] {0D 000 000} IRET 0 0 (PID: 0, PC: 0, Accumulator: 15, PSW: 0000 [----------------])
+[7] {01 014 00A} ADD 20 10 (PID: 0, PC: 1, Accumulator: 30, PSW: 0000 [----------------])
+[8] {04 004 000} TRAP 4 0 (PID: 0, PC: 2, Accumulator: 30, PSW: 0000 [----------------])
+[9] {0C 002 000} OS 2 0 (PID: 0, PC: 242, Accumulator: 30, PSW: 0080 [--------X-------])
+Process [0 - programV1-2a] moving from the [EXECUTING] state to the [READY] state
+	[10] Ready-to-run processes queue:
+		USER: [1,10],[0,10]
+		DAEMONS: [3,100]
+[11] {0D 000 000} IRET 0 0 (PID: 1, PC: 0, Accumulator: 30, PSW: 0000 [----------------])
+[12] {01 014 00A} ADD 20 10 (PID: 1, PC: 1, Accumulator: 30, PSW: 0000 [----------------])
+[13] {04 004 000} TRAP 4 0 (PID: 1, PC: 2, Accumulator: 30, PSW: 0000 [----------------])
+[14] {0C 002 000} OS 2 0 (PID: 1, PC: 242, Accumulator: 30, PSW: 0080 [--------X-------])
+Process [1 - programV1-2b] moving from the [READY] state to the [READY] state
+	[15] Ready-to-run processes queue:
+		USER: [1,10],[0,10],[1,10]
+		DAEMONS: [3,100]
+[16] {0D 000 000} IRET 0 0 (PID: 1, PC: 0, Accumulator: 30, PSW: 01E1 [--------X------S])
+[16] END of the simulation
