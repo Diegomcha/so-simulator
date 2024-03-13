@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Diegomcha/so-simulator/compare/v1.0.0...v1.0.1) (2024-03-13)
+
+
+### Bug Fixes
+
+* :bug: name was not correct ([5aac874](https://github.com/Diegomcha/so-simulator/commit/5aac87407c1f12ee794b647be8f58a94703e8316))
+
 ## 1.0.0 (2024-03-13)
 
 
