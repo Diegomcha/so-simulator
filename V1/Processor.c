@@ -255,11 +255,25 @@ void Processor_DecodeAndExecuteInstruction()
 
 	// Instruction HALT
 	case HALT_INST:
+		// If in user mode, raise an exception
+		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
+		{
+			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			break;
+		}
+
 		Processor_ActivatePSW_Bit(POWEROFF_BIT);
 		break;
 
 	// Instruction OS
 	case OS_INST: // Make a operating system routine in entry point indicated by operand1
+		// If in user mode, raise an exception
+		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
+		{
+			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			break;
+		}
+
 		// Show final part of HARDWARE message with CPU registers
 		// Show message: " (PC: registerPC_CPU, Accumulator: registerAccumulator_CPU, PSW: registerPSW_CPU [Processor_ShowPSW()]\n
 		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 69, HARDWARE, InstructionNames[operationCode], operand1, operand2, OperatingSystem_GetExecutingProcessID(), registerPC_CPU, registerAccumulator_CPU, registerPSW_CPU, Processor_ShowPSW());
@@ -273,6 +287,13 @@ void Processor_DecodeAndExecuteInstruction()
 
 	// Instruction IRET
 	case IRET_INST: // Return from a interrupt handle manager call
+		// If in user mode, raise an exception
+		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
+		{
+			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			break;
+		}
+
 		registerPSW_CPU = Processor_PopFromSystemStack();
 		registerPC_CPU = Processor_PopFromSystemStack();
 		break;
