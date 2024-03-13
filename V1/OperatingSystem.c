@@ -146,15 +146,19 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 
 	Processor_SetSSP(MAINMEMORYSIZE - 1);
 
-	// Assign the processor to the selected process
-	OperatingSystem_Dispatch(selectedProcess);
-
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
 
 	// If we only managed to create SIP terminate execution
 	if (numCreatedProcesses == 1)
+	{
+		// Set the executing to SIP that way TerminateExecutingProcess halts the processor
+		executingProcessID = sipID;
 		OperatingSystem_TerminateExecutingProcess();
+	}
+	else
+		// Assign the processor to the selected process
+		OperatingSystem_Dispatch(selectedProcess);
 }
 
 // The LTS is responsible of the admission of new processes in the system.
