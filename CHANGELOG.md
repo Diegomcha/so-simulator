@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/Diegomcha/so-simulator/compare/v1.0.1...v1.0.2) (2024-03-13)
+
+
+### Bug Fixes
+
+* **v1:** :bug: fixed auto release artifact not uploading ([76867de](https://github.com/Diegomcha/so-simulator/commit/76867de43a1996004401be06015df7191f5efa65))
+
 ## [1.0.1](https://github.com/Diegomcha/so-simulator/compare/v1.0.0...v1.0.1) (2024-03-13)
 
 
