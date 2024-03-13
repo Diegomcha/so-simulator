@@ -131,7 +131,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	OperatingSystem_PrepareDaemons(programsFromFileIndex);
 
 	// Create all user processes from the information given in the command line
-	OperatingSystem_LongTermScheduler();
+	int numCreatedProcesses = OperatingSystem_LongTermScheduler();
 
 	if (strcmp(programList[processTable[sipID].programListIndex]->executableName, "SystemIdleProcess") && processTable[sipID].state == READY)
 	{
@@ -151,6 +151,10 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
+
+	// If we only managed to create SIP terminate execution
+	if (numCreatedProcesses == 1)
+		OperatingSystem_TerminateExecutingProcess();
 }
 
 // The LTS is responsible of the admission of new processes in the system.
@@ -345,6 +349,9 @@ void OperatingSystem_RestoreContext(int PID)
 	Processor_PushInSystemStack(processTable[PID].copyOfPCRegister);
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
 	Processor_SetRegisterSP(processTable[PID].copyOfSPRegister);
+	Processor_SetAccumulator(processTable[PID].copyOfAccumulatorRegister);
+	Processor_SetRegisterA(processTable[PID].copyofRegisterA);
+	Processor_SetRegisterB(processTable[PID].copyofRegisterB);
 
 	// Same thing for the MMU registers
 	MMU_SetBase(processTable[PID].initialPhysicalAddress);
@@ -373,6 +380,15 @@ void OperatingSystem_SaveContext(int PID)
 
 	// Save RegisterSP
 	processTable[PID].copyOfSPRegister = Processor_GetRegisterSP();
+
+	// Save the accumulator
+	processTable[PID].copyOfAccumulatorRegister = Processor_GetAccumulator();
+
+	// Save the general purpose register A
+	processTable[PID].copyofRegisterA = Processor_GetRegisterA();
+
+	// Save the general purpose register B
+	processTable[PID].copyofRegisterB = Processor_GetRegisterB();
 }
 
 // Exception management routine
