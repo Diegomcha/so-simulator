@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/Diegomcha/so-simulator/compare/v1.0.2...v1.0.3) (2024-03-13)
+
+
+### Bug Fixes
+
+* **v1:** :bug: fized zip not being built properly ([d5e4440](https://github.com/Diegomcha/so-simulator/commit/d5e4440b7cfaf92cd0ea6e1bcee8f5b1a9a55eaf))
+
 ## [1.0.2](https://github.com/Diegomcha/so-simulator/compare/v1.0.1...v1.0.2) (2024-03-13)
 
 
