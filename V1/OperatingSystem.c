@@ -464,19 +464,22 @@ void OperatingSystem_HandleSystemCall()
 		// Show error message if no equivalent process was found
 		if (PID == NOPROCESS)
 		{
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 117, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 			break;
 		}
 
 		// Perform the yield
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
 
-		// Save in the process' PCB essential values stored in hardware registers and the system stack
-		OperatingSystem_SaveContext(executingProcessID);
-		// Change the process' state
-		OperatingSystem_MoveToTheREADYState(executingProcessID);
+		// Preempt the running process
+		OperatingSystem_PreemptRunningProcess();
 
-		// The processor is not assigned until the OS selects another process
-		executingProcessID = PID;
+		// Remove the process from the queue
+		Heap_poll(readyToRunQueue[processTable[executingProcessID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]));
+
+		// Assign the processor to the process
+		OperatingSystem_Dispatch(PID);
+
 		break;
 
 	case SYSCALL_END:
