@@ -7,14 +7,14 @@ permissions:
   contents: write
   pull-requests: write
 
-name: release-please
+name: Release-please
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v4
-        name: release
+        name: Release
         with:
           # this assumes that you have created a personal access token
           # (PAT) and configured it as a GitHub action secret named
@@ -25,7 +25,7 @@ jobs:
           release-type: simple
 
       - uses: actions/checkout@v4
-      - name: tag major and minor versions
+      - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
         run: |
           git config user.name github-actions[bot]
