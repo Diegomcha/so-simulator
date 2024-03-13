@@ -39,3 +39,14 @@ jobs:
           git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
           git push origin v${{ steps.release.outputs.major }}
           git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+
+      - name: Upload release artifact
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          zip code.zip $GITHUB_WORKSPACE/V${{steps.release.outputs.major}}
+          gh release upload ${{ steps.release.outputs.tag_name }} code.zip
+          cd $GITHUB_WORKSPACE/V${{steps.release.outputs.major}}
+          make
+          gh release upload Simulator
