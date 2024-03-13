@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/Diegomcha/so-simulator/compare/v1.0.3...v1.0.4) (2024-03-13)
+
+
+### Bug Fixes
+
+* **v1:** :bug: fixed code.zip using wrong path ([ce43fc6](https://github.com/Diegomcha/so-simulator/commit/ce43fc67253e85af99837abd48fa484834617e21))
+
 ## [1.0.3](https://github.com/Diegomcha/so-simulator/compare/v1.0.2...v1.0.3) (2024-03-13)
 
 
