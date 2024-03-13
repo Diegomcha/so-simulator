@@ -57,11 +57,14 @@ typedef struct
 	int busy;
 	int initialPhysicalAddress;
 	int processSize;
-	int copyOfSPRegister;
 	int state;
 	int priority;
+	int copyOfSPRegister;
 	int copyOfPCRegister;
 	unsigned int copyOfPSWRegister;
+	int copyOfAccumulatorRegister;
+	int copyofRegisterA;
+	int copyofRegisterB;
 	int programListIndex;
 	int queueID;
 } PCB;

@@ -1,0 +1,6 @@
+10
+5
+ADD 33 33
+TRAP 4
+NOP
+TRAP 3

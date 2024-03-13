@@ -131,7 +131,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	OperatingSystem_PrepareDaemons(programsFromFileIndex);
 
 	// Create all user processes from the information given in the command line
-	OperatingSystem_LongTermScheduler();
+	int numCreatedProcesses = OperatingSystem_LongTermScheduler();
 
 	if (strcmp(programList[processTable[sipID].programListIndex]->executableName, "SystemIdleProcess") && processTable[sipID].state == READY)
 	{
@@ -146,11 +146,19 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 
 	Processor_SetSSP(MAINMEMORYSIZE - 1);
 
-	// Assign the processor to the selected process
-	OperatingSystem_Dispatch(selectedProcess);
-
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
+
+	// If we only managed to create SIP terminate execution
+	if (numCreatedProcesses == 1)
+	{
+		// Set the executing to SIP that way TerminateExecutingProcess halts the processor
+		executingProcessID = sipID;
+		OperatingSystem_TerminateExecutingProcess();
+	}
+	else
+		// Assign the processor to the selected process
+		OperatingSystem_Dispatch(selectedProcess);
 }
 
 // The LTS is responsible of the admission of new processes in the system.
@@ -261,6 +269,9 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].state = NEW;
 	processTable[PID].priority = priority;
 	processTable[PID].programListIndex = processPLIndex;
+	processTable[PID].copyOfAccumulatorRegister = 0;
+	processTable[PID].copyofRegisterA = 0;
+	processTable[PID].copyofRegisterB = 0;
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM)
 	{
@@ -345,6 +356,9 @@ void OperatingSystem_RestoreContext(int PID)
 	Processor_PushInSystemStack(processTable[PID].copyOfPCRegister);
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
 	Processor_SetRegisterSP(processTable[PID].copyOfSPRegister);
+	Processor_SetAccumulator(processTable[PID].copyOfAccumulatorRegister);
+	Processor_SetRegisterA(processTable[PID].copyofRegisterA);
+	Processor_SetRegisterB(processTable[PID].copyofRegisterB);
 
 	// Same thing for the MMU registers
 	MMU_SetBase(processTable[PID].initialPhysicalAddress);
@@ -373,6 +387,15 @@ void OperatingSystem_SaveContext(int PID)
 
 	// Save RegisterSP
 	processTable[PID].copyOfSPRegister = Processor_GetRegisterSP();
+
+	// Save the accumulator
+	processTable[PID].copyOfAccumulatorRegister = Processor_GetAccumulator();
+
+	// Save the general purpose register A
+	processTable[PID].copyofRegisterA = Processor_GetRegisterA();
+
+	// Save the general purpose register B
+	processTable[PID].copyofRegisterB = Processor_GetRegisterB();
 }
 
 // Exception management routine
