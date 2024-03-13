@@ -9,7 +9,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/V1/Simulator",
-      "args": ["miau"],
+      "args": ["programSimpleYield", "programSimpleYieldOther"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/V1",
       "environment": [],
