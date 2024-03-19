@@ -78,7 +78,6 @@ char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int programsFromFileIndex)
 {
-
 	int i, selectedProcess;
 	FILE *programFile; // For load Operating System Code
 
@@ -163,6 +162,9 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	else
 		// Assign the processor to the selected process
 		OperatingSystem_Dispatch(selectedProcess);
+
+	// Prints general status
+	OperatingSystem_PrintStatus();
 }
 
 // The LTS is responsible of the admission of new processes in the system.
@@ -170,7 +172,6 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 // 			command line and daemons programs
 int OperatingSystem_LongTermScheduler()
 {
-
 	int PID, i,
 		numberOfSuccessfullyCreatedProcesses = 0;
 
@@ -196,6 +197,10 @@ int OperatingSystem_LongTermScheduler()
 			OperatingSystem_MoveToTheREADYState(PID);
 		}
 	}
+
+	// If any process was created print the general status
+	if (numberOfSuccessfullyCreatedProcesses)
+		OperatingSystem_PrintStatus();
 
 	// Return the number of succesfully created processes
 	return numberOfSuccessfullyCreatedProcesses;
@@ -304,7 +309,8 @@ void OperatingSystem_MoveToTheREADYState(int PID)
 	}
 
 	// Print ready to run queue
-	OperatingSystem_PrintReadyToRunQueue();
+	// Exercise V2-4 was to comment the following line
+	// OperatingSystem_PrintReadyToRunQueue();
 }
 
 // The STS is responsible of deciding which process to execute when specific events occur.
@@ -409,6 +415,9 @@ void OperatingSystem_HandleException()
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 71, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 
 	OperatingSystem_TerminateExecutingProcess();
+
+	// Print general status
+	OperatingSystem_PrintStatus();
 }
 
 // All tasks regarding the removal of the executing process
@@ -491,12 +500,19 @@ void OperatingSystem_HandleSystemCall()
 		// Assign the processor to the process
 		OperatingSystem_Dispatch(PID);
 
+		// Print general status
+		OperatingSystem_PrintStatus();
+
 		break;
 
 	case SYSCALL_END:
 		// Show message: "Process [executingProcessID] has requested to terminate\n"
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 73, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 		OperatingSystem_TerminateExecutingProcess();
+
+		// Print general status
+		OperatingSystem_PrintStatus();
+
 		break;
 	}
 }
