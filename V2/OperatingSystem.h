@@ -14,17 +14,20 @@
 #define NOPROCESS -1
 
 // Number of queues of ready to run processes, initially one queue...
-// #define NUMBEROFQUEUES 1
-// enum TypeOfReadyToRunProcessQueues
-// {
-// 	ALLPROCESSESQUEUE
-// };
 #define NUMBEROFQUEUES 2
 enum TypeOfReadyToRunProcessQueues
 {
 	USERPROCESSQUEUE,
 	DAEMONSQUEUE
 };
+// #define NUMBEROFQUEUES 1
+// enum TypeOfReadyToRunProcessQueues
+// {
+// 	ALLPROCESSESQUEUE
+// };
+
+// Exercise 5-c of V2
+#define SLEEPINGQUEUE
 
 // Contains the possible type of programs
 enum ProgramTypes
@@ -48,7 +51,8 @@ enum SystemCallIdentifiers
 {
 	SYSCALL_END = 3,
 	SYSCALL_YIELD = 4,
-	SYSCALL_PRINTEXECPID = 5
+	SYSCALL_PRINTEXECPID = 5,
+	SYSCALL_SLEEP = 7
 };
 
 // A PCB contains all of the information about a process that is needed by the OS
@@ -67,6 +71,7 @@ typedef struct
 	int copyofRegisterB;
 	int programListIndex;
 	int queueID;
+	int whenToWakeUp; // Exercise 5-a of V2
 } PCB;
 
 // These "extern" declaration enables other source code files to gain access

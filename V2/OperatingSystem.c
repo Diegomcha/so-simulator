@@ -13,6 +13,7 @@
 // Functions prototypes
 void OperatingSystem_PCBInitialization(int, int, int, int, int);
 void OperatingSystem_MoveToTheREADYState(int);
+void OperatingSystem_MoveToTheBLOCKEDState(int);
 void OperatingSystem_Dispatch(int);
 void OperatingSystem_RestoreContext(int);
 void OperatingSystem_SaveContext(int);
@@ -51,10 +52,15 @@ int initialPID = -1;
 // int baseDaemonsInProgramList;
 
 // Array that contains the identifiers of the READY processes
-// heapItem readyToRunQueue[NUMBEROFQUEUES][PROCESSTABLEMAXSIZE];
 heapItem *readyToRunQueue[NUMBEROFQUEUES];
-// int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0};
 int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0, 0};
+// heapItem readyToRunQueue[NUMBEROFQUEUES][PROCESSTABLEMAXSIZE];
+// int numberOfReadyToRunProcesses[NUMBEROFQUEUES] = {0};
+
+// Exercise 5-b of V2
+// Heap with blocked processes sorted by when to wakeup
+heapItem *sleepingProcessesQueue;
+int numberOfSleepingProcesses = 0;
 
 char *queueNames[NUMBEROFQUEUES] = {"USER", "DAEMONS"};
 
@@ -98,6 +104,9 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// Space for the ready to run queues (one queue initially...)
 	for (int i = 0; i < NUMBEROFQUEUES; i++)
 		readyToRunQueue[i] = Heap_create(PROCESSTABLEMAXSIZE);
+
+	// Space for the sleeping processes queue
+	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
 
 	programFile = fopen("OperatingSystemCode", "r");
 	if (programFile == NULL)
@@ -304,9 +313,7 @@ void OperatingSystem_MoveToTheREADYState(int PID)
 	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
 
 	if (Heap_add(PID, readyToRunQueue[processTable[PID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[PID].queueID])) >= 0)
-	{
 		processTable[PID].state = READY;
-	}
 
 	// Print ready to run queue
 	// Exercise V2-4 was to comment the following line
@@ -468,11 +475,13 @@ void OperatingSystem_HandleSystemCall()
 
 	switch (systemCallID)
 	{
+	// Handle print exception syscall
 	case SYSCALL_PRINTEXECPID:
 		// Show message: "Process [executingProcessID] has the processor assigned\n"
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 72, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, Processor_GetRegisterA(), Processor_GetRegisterB());
 		break;
 
+	// Handle yield syscall
 	case SYSCALL_YIELD:
 		// Get process from the executing proccess queue if exists
 		PID = Heap_getFirst(readyToRunQueue[processTable[executingProcessID].queueID], numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]);
@@ -505,6 +514,16 @@ void OperatingSystem_HandleSystemCall()
 
 		break;
 
+	// Handle sleep syscall
+	case SYSCALL_SLEEP:
+		// TODO: Implement syscall sleep
+
+		// OperatingSystem_PreemptRunningProcess
+
+		// Print general status
+		OperatingSystem_PrintStatus();
+		break;
+	// Handle end syscalls
 	case SYSCALL_END:
 		// Show message: "Process [executingProcessID] has requested to terminate\n"
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 73, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
@@ -512,7 +531,6 @@ void OperatingSystem_HandleSystemCall()
 
 		// Print general status
 		OperatingSystem_PrintStatus();
-
 		break;
 	}
 }
@@ -570,3 +588,34 @@ void OperatingSystem_HandleClockInterrupt()
 {
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 120, INTERRUPT, ++numberOfClockInterrupts);
 }
+
+// Blocks the running process
+void OperatingSystem_BlockRunningProcess(int executingProcessID)
+{
+	// Save in the process' PCB essential values stored in hardware registers and the system stack
+	OperatingSystem_SaveContext(executingProcessID);
+
+	// * Move executing process to the blocked state
+	// Track state changes
+	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[BLOCKED]);
+
+	// Add the process to the sleeping processes queue
+	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &(numberOfSleepingProcesses)) >= 0)
+		processTable[executingProcessID].state = BLOCKED;
+
+	// The processor is not assigned until the OS selects another process
+	executingProcessID = NOPROCESS;
+}
+
+/*
+// Function invoked when the executing process leaves the CPU
+void OperatingSystem_PreemptRunningProcess()
+{
+	// Save in the process' PCB essential values stored in hardware registers and the system stack
+	OperatingSystem_SaveContext(executingProcessID);
+	// Change the process' state
+	OperatingSystem_MoveToTheREADYState(executingProcessID);
+	// The processor is not assigned until the OS selects another process
+	executingProcessID = NOPROCESS;
+}
+*/
