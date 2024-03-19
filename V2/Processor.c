@@ -362,6 +362,10 @@ void Processor_DecodeAndExecuteInstruction()
 // Hardware interrupt processing
 void Processor_ManageInterrupts()
 {
+	// Masked interrupts are not attended
+	if (Processor_PSW_BitState(INTERRUPT_MASKED_BIT))
+		return;
+
 	int i;
 
 	for (i = 0; i < INTERRUPTTYPES; i++)
@@ -373,7 +377,8 @@ void Processor_ManageInterrupts()
 			// Copy PC and PSW registers in the system stack
 			Processor_PushInSystemStack(registerPC_CPU);
 			Processor_PushInSystemStack(registerPSW_CPU);
-			// Activate protected excution mode
+			// Activate protected excution mode & mask interrupts
+			Processor_ActivatePSW_Bit(INTERRUPT_MASKED_BIT);
 			Processor_ActivatePSW_Bit(EXECUTION_MODE_BIT);
 			// Call the appropriate OS interrupt-handling routine setting PC register
 			registerPC_CPU = interruptVectorTable[i];
@@ -395,6 +400,8 @@ char *Processor_ShowPSW()
 		pswmask[tam - ZERO_BIT] = 'Z';
 	if (Processor_PSW_BitState(POWEROFF_BIT))
 		pswmask[tam - POWEROFF_BIT] = 'S';
+	if (Processor_PSW_BitState(INTERRUPT_MASKED_BIT))
+		pswmask[tam - INTERRUPT_MASKED_BIT] = 'M';
 	return pswmask;
 }
 
