@@ -24,7 +24,8 @@ enum PSW_BITS
 enum INT_BITS
 {
 	SYSCALL_BIT = 2,
-	EXCEPTION_BIT = 6
+	EXCEPTION_BIT = 6,
+	CLOCKINT_BIT = 9
 };
 
 // Functions prototypes

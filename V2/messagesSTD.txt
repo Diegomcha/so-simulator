@@ -17,3 +17,4 @@
 112,\n
 116,Process [@G%d - %s@@] will transfer the control of the processor to process [@G%d - %s@@]\n
 117,Process [@G%d - %s@@] cannot transfer the control of the processor to any process\n
+120,@CClock interrput number [%d] has occurred@@\n

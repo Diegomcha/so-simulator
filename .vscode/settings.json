@@ -1,6 +1,8 @@
 {
   "files.exclude": {
-    "**/*.o": true
+    "**/*.o": true,
+    "V1": true,
+    "V0": true
   },
   "conventionalCommits.scopes": ["v0", "v1", "v2"],
   "files.associations": {

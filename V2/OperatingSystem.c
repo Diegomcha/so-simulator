@@ -26,6 +26,7 @@ int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
+void OperatingSystem_HandleClockInterrupt();
 
 // The process table
 // PCB processTable[PROCESSTABLEMAXSIZE];
@@ -67,6 +68,9 @@ int MAINMEMORYSECTIONSIZE = 60;
 extern int MAINMEMORYSIZE;
 
 int PROCESSTABLEMAXSIZE = 4;
+
+// Keep track of the number of clock interrupts that occurr
+int numberOfClockInterrupts = 0;
 
 // For debug messages
 char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
@@ -502,11 +506,17 @@ void OperatingSystem_InterruptLogic(int entryPoint)
 {
 	switch (entryPoint)
 	{
+	// Handle syscalls
 	case SYSCALL_BIT: // SYSCALL_BIT=2
 		OperatingSystem_HandleSystemCall();
 		break;
+	// Handle exceptions
 	case EXCEPTION_BIT: // EXCEPTION_BIT=6
 		OperatingSystem_HandleException();
+		break;
+	// Handle clock interrupts
+	case CLOCKINT_BIT: // CLOCKINT_BIT = 9
+		OperatingSystem_HandleClockInterrupt();
 		break;
 	}
 }
@@ -538,4 +548,9 @@ void OperatingSystem_PrintReadyToRunQueue()
 		// Print new line
 		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 112, SHORTTERMSCHEDULE);
 	}
+}
+
+void OperatingSystem_HandleClockInterrupt()
+{
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 120, INTERRUPT, ++numberOfClockInterrupts);
 }
