@@ -29,6 +29,8 @@ void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
 void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_BlockRunningProcess();
+int OperatingSystem_ExtractReadyFromSleepingQueue();
+int OperatingSystem_PeekReadyToRunQueue();
 
 // The process table
 // PCB processTable[PROCESSTABLEMAXSIZE];
@@ -595,7 +597,51 @@ void OperatingSystem_PrintReadyToRunQueue()
 
 void OperatingSystem_HandleClockInterrupt()
 {
+	// Log clock interrupt
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 120, INTERRUPT, ++numberOfClockInterrupts);
+
+	// Store the PID of the process to wake up, the number of woken processes & whether the executing process must be preempted
+	int PID = NOPROCESS;
+	int wokenProcesses = 0;
+
+	// Check sleeping processes for any process to wake up
+	while (PID = OperatingSystem_ExtractReadyFromSleepingQueue(), PID != NOPROCESS)
+	{
+		// Move the process to the ready state
+		OperatingSystem_MoveToTheREADYState(PID);
+
+		// Increase the woken processes counter
+		wokenProcesses++;
+	}
+
+	// Log the general status if any process was woken up
+	if (wokenProcesses > 0)
+		OperatingSystem_PrintStatus();
+
+	// Check whether the executing process has to be preempted
+	PID = OperatingSystem_PeekReadyToRunQueue();
+
+	// If the executing process exists, check if it must be preempted (higher queue/priority process)
+	if (PID != NOPROCESS &&
+		(processTable[PID].queueID < processTable[executingProcessID].queueID ||   // Queue is higher priority
+		 (processTable[PID].queueID == processTable[executingProcessID].queueID && // OR queue is the same with higher priority
+		  processTable[PID].priority < processTable[executingProcessID].priority)))
+	{
+		// Log what is going to happen
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 121, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
+
+		// Preempt the running process
+		OperatingSystem_PreemptRunningProcess();
+
+		// Extract the process from the queue
+		OperatingSystem_ExtractFromReadyToRun(); // PID is the same so there is no need to update the variable
+
+		// Dispatch the next process in the queue
+		OperatingSystem_Dispatch(PID);
+
+		// Log the general status
+		OperatingSystem_PrintStatus();
+	}
 }
 
 // Blocks the running process
@@ -614,4 +660,42 @@ void OperatingSystem_BlockRunningProcess()
 
 	// The processor is not assigned until the OS selects another process
 	executingProcessID = NOPROCESS;
+}
+
+// Extracts a ready process from the sleeping processes queue
+int OperatingSystem_ExtractReadyFromSleepingQueue()
+{
+	// Variables to extract the ready process from the sleeping queue
+	int selPID = Heap_getFirst(sleepingProcessesQueue, numberOfSleepingProcesses);
+
+	// If it is a process and it is time to wake up
+	if (selPID != NOPROCESS && processTable[selPID].whenToWakeUp == numberOfClockInterrupts)
+		// Remove it from the heap
+		Heap_poll(sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses);
+	else
+		// Return NOPROCESS if no suitable process was found
+		selPID = NOPROCESS;
+
+	// Return the process
+	return selPID;
+}
+
+// Return PID of the most priority process in the READY queues
+int OperatingSystem_PeekReadyToRunQueue()
+{
+	// Variables to extract the ready process
+	int selectedProcess = NOPROCESS;
+	int currentQID = 0;
+
+	// Extract a process if we have more queues and we dont have a process yet
+	while (selectedProcess == NOPROCESS && currentQID < NUMBEROFQUEUES)
+	{
+		// Get the process from the queue if exists
+		selectedProcess = Heap_getFirst(readyToRunQueue[currentQID], numberOfReadyToRunProcesses[currentQID]);
+		// Move to the next queue
+		currentQID++;
+	}
+
+	// Return most priority process or NOPROCESS if empty queue
+	return selectedProcess;
 }
