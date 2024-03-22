@@ -23,9 +23,14 @@ int registerMAR_CPU;				// Memory Address Register
 BUSDATACELL registerMBR_CPU;		// Memory Buffer Register
 int registerCTRL_CPU;				// Control bus Register
 
-int registerA_CPU; // General purpose register
-int registerB_CPU; // General purpose register
-int registerC_CPU; // System purpose register
+// General purpose register
+int registerA_CPU;
+// General purpose register
+int registerB_CPU;
+// System purpose register
+int registerC_CPU;
+// TODO: Add the purpose of the register
+int registerD_CPU;
 
 int registerSP_CPU;		// Stack pointer register
 int interruptLines_CPU; // Processor interrupt lines
@@ -136,6 +141,7 @@ void Processor_DecodeAndExecuteInstruction()
 	case TRAP_INST:
 		Processor_RaiseInterrupt(SYSCALL_BIT);
 		registerC_CPU = operand1;
+		registerD_CPU = operand2;
 		registerPC_CPU++;
 		break;
 
@@ -407,3 +413,15 @@ char *Processor_ShowPSW()
 
 /////////////////////////////////////////////////////////
 //  New functions below this line  //////////////////////
+
+// Getter for the RegisterD
+int Processor_GetRegisterD()
+{
+	return registerD_CPU;
+}
+
+// Setter for the RegisterD
+void Processor_SetRegisterD(int reg)
+{
+	registerD_CPU = reg;
+}
