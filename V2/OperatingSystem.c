@@ -28,6 +28,7 @@ void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 void OperatingSystem_PrintReadyToRunQueue();
 void OperatingSystem_HandleClockInterrupt();
+void OperatingSystem_BlockRunningProcess();
 
 // The process table
 // PCB processTable[PROCESSTABLEMAXSIZE];
@@ -290,6 +291,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].copyOfAccumulatorRegister = 0;
 	processTable[PID].copyofRegisterA = 0;
 	processTable[PID].copyofRegisterB = 0;
+	processTable[PID].whenToWakeUp = 0;
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM)
 	{
@@ -516,9 +518,16 @@ void OperatingSystem_HandleSystemCall()
 
 	// Handle sleep syscall
 	case SYSCALL_SLEEP:
-		// TODO: Implement syscall sleep
+		// Compute the sleep time to the process PCB
+		int delay = Processor_GetRegisterD() > 0 ? Processor_GetRegisterD() : abs(Processor_GetAccumulator());
+		processTable[executingProcessID].whenToWakeUp = delay + numberOfClockInterrupts + 1;
 
-		// OperatingSystem_PreemptRunningProcess
+		// Blocks the current process
+		OperatingSystem_BlockRunningProcess();
+
+		// Dispatches the next process in the queue which is decided by the STS
+		PID = OperatingSystem_ShortTermScheduler();
+		OperatingSystem_Dispatch(PID);
 
 		// Print general status
 		OperatingSystem_PrintStatus();
@@ -590,7 +599,7 @@ void OperatingSystem_HandleClockInterrupt()
 }
 
 // Blocks the running process
-void OperatingSystem_BlockRunningProcess(int executingProcessID)
+void OperatingSystem_BlockRunningProcess()
 {
 	// Save in the process' PCB essential values stored in hardware registers and the system stack
 	OperatingSystem_SaveContext(executingProcessID);
@@ -606,16 +615,3 @@ void OperatingSystem_BlockRunningProcess(int executingProcessID)
 	// The processor is not assigned until the OS selects another process
 	executingProcessID = NOPROCESS;
 }
-
-/*
-// Function invoked when the executing process leaves the CPU
-void OperatingSystem_PreemptRunningProcess()
-{
-	// Save in the process' PCB essential values stored in hardware registers and the system stack
-	OperatingSystem_SaveContext(executingProcessID);
-	// Change the process' state
-	OperatingSystem_MoveToTheREADYState(executingProcessID);
-	// The processor is not assigned until the OS selects another process
-	executingProcessID = NOPROCESS;
-}
-*/
