@@ -167,6 +167,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// If we only managed to create SIP terminate execution
 	if (numCreatedProcesses == 1)
 	{
+		// TODO: If 0 user processes are created, simulation finishes, but SIP does not terminate
 		// Set the executing to SIP that way TerminateExecutingProcess halts the processor
 		executingProcessID = sipID;
 		OperatingSystem_TerminateExecutingProcess();
@@ -487,17 +488,18 @@ void OperatingSystem_HandleSystemCall()
 
 	// Handle yield syscall
 	case SYSCALL_YIELD:
-		// Get process from the executing proccess queue if exists
+		// Get process from the ready processes queue if exists
 		PID = Heap_getFirst(readyToRunQueue[processTable[executingProcessID].queueID], numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]);
 
 		// Check priorities match
+		// TODO: Fix the following error: priorities check accepts different priority values: (… && processTable[executingProcessID].priority < processTable[PID].priority)
 		if (PID != NOPROCESS && processTable[executingProcessID].priority < processTable[PID].priority)
 			PID = NOPROCESS;
 
 		// Show error message if no equivalent process was found
 		if (PID == NOPROCESS)
 		{
-			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 117, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 117, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
 			break;
 		}
 
