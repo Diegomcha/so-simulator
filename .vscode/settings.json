@@ -1,18 +1,6 @@
 {
   "files.exclude": {
-    "**/*.o": true,
-    "V1": true,
-    "V0": true
+    "**/*.o": true
   },
-  "conventionalCommits.scopes": [
-    "v0",
-    "v1",
-    "v2"
-  ],
-  "files.associations": {
-    "processorProp.C": "cpp",
-    "*.def": "c",
-    "processor.h": "c",
-    "processorbase.h": "c"
-  }
+  "conventionalCommits.scopes": ["v0", "v1", "v2"]
 }
