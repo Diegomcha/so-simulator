@@ -47,7 +47,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd $GITHUB_WORKSPACE/V${{steps.release.outputs.major}}
           zip code.zip *
           gh release upload ${{ steps.release.outputs.tag_name }} code.zip
           make
