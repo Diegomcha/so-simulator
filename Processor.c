@@ -29,7 +29,7 @@ int registerA_CPU;
 int registerB_CPU;
 // System purpose register
 int registerC_CPU;
-// TODO: Add the purpose of the register
+// System purpose register
 int registerD_CPU;
 
 int registerSP_CPU;		// Stack pointer register

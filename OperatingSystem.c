@@ -281,7 +281,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 111, SYSPROC, PID, statesNames[NEW], programList[processPLIndex]->executableName);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 111, SYSPROC, PID, statesNames[NEW], programList[processPLIndex]->executableName);
 
 	processTable[PID].busy = 1;
 	processTable[PID].initialPhysicalAddress = initialPhysicalAddress;
@@ -314,7 +314,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 void OperatingSystem_MoveToTheREADYState(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
 
 	if (Heap_add(PID, readyToRunQueue[processTable[PID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[PID].queueID])) >= 0)
 		processTable[PID].state = READY;
@@ -360,7 +360,7 @@ int OperatingSystem_ExtractFromReadyToRun()
 void OperatingSystem_Dispatch(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[EXECUTING]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[EXECUTING]);
 
 	//  The process identified by PID becomes the current executing process
 	executingProcessID = PID;
@@ -435,7 +435,7 @@ void OperatingSystem_HandleException()
 void OperatingSystem_TerminateExecutingProcess()
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
 
 	processTable[executingProcessID].state = EXIT;
 
@@ -502,7 +502,7 @@ void OperatingSystem_HandleSystemCall()
 		}
 
 		// Perform the yield
-		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
 
 		// Preempt the running process
 		OperatingSystem_PreemptRunningProcess();
@@ -600,6 +600,8 @@ void OperatingSystem_HandleClockInterrupt()
 	// Log clock interrupt
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 120, INTERRUPT, ++numberOfClockInterrupts);
 
+	// * Waking up processes
+
 	// Store the PID of the process to wake up, the number of woken processes & whether the executing process must be preempted
 	int PID = NOPROCESS;
 	int wokenProcesses = 0;
@@ -617,6 +619,8 @@ void OperatingSystem_HandleClockInterrupt()
 	// Log the general status if any process was woken up
 	if (wokenProcesses > 0)
 		OperatingSystem_PrintStatus();
+
+	// * Preempting executing process
 
 	// Check whether the executing process has to be preempted
 	PID = OperatingSystem_PeekReadyToRunQueue();
@@ -652,7 +656,7 @@ void OperatingSystem_BlockRunningProcess()
 
 	// * Move executing process to the blocked state
 	// Track state changes
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[BLOCKED]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[BLOCKED]);
 
 	// Add the process to the sleeping processes queue
 	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &(numberOfSleepingProcesses)) >= 0)
