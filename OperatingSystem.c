@@ -166,15 +166,11 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 
 	// If we only managed to create SIP terminate execution
 	if (numCreatedProcesses == 1)
-	{
-		// TODO: If 0 user processes are created, simulation finishes, but SIP does not terminate
-		// Set the executing to SIP that way TerminateExecutingProcess halts the processor
-		executingProcessID = sipID;
-		OperatingSystem_TerminateExecutingProcess();
-	}
-	else
-		// Assign the processor to the selected process
-		OperatingSystem_Dispatch(selectedProcess);
+		// Tell SIP we are ready to shutdown
+		OperatingSystem_ReadyToShutdown();
+
+	// Assign the processor to the selected process
+	OperatingSystem_Dispatch(selectedProcess);
 
 	// Prints general status
 	OperatingSystem_PrintStatus();
@@ -472,7 +468,7 @@ void OperatingSystem_TerminateExecutingProcess()
 // System call management routine
 void OperatingSystem_HandleSystemCall()
 {
-	int systemCallID;
+	int systemCallID, delay;
 	int PID = NOPROCESS;
 
 	// Register A contains the identifier of the issued system call
@@ -492,8 +488,7 @@ void OperatingSystem_HandleSystemCall()
 		PID = Heap_getFirst(readyToRunQueue[processTable[executingProcessID].queueID], numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]);
 
 		// Check priorities match
-		// TODO: Fix the following error: priorities check accepts different priority values: (… && processTable[executingProcessID].priority < processTable[PID].priority)
-		if (PID != NOPROCESS && processTable[executingProcessID].priority < processTable[PID].priority)
+		if (PID != NOPROCESS && processTable[executingProcessID].priority == processTable[PID].priority)
 			PID = NOPROCESS;
 
 		// Show error message if no equivalent process was found
@@ -506,11 +501,11 @@ void OperatingSystem_HandleSystemCall()
 		// Perform the yield
 		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE, 116, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
 
-		// Preempt the running process
-		OperatingSystem_PreemptRunningProcess();
-
 		// Remove the process from the queue
 		Heap_poll(readyToRunQueue[processTable[executingProcessID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]));
+
+		// Preempt the running process
+		OperatingSystem_PreemptRunningProcess();
 
 		// Assign the processor to the process
 		OperatingSystem_Dispatch(PID);
@@ -523,7 +518,7 @@ void OperatingSystem_HandleSystemCall()
 	// Handle sleep syscall
 	case SYSCALL_SLEEP:
 		// Compute the sleep time to the process PCB
-		int delay = Processor_GetRegisterD() > 0 ? Processor_GetRegisterD() : abs(Processor_GetAccumulator());
+		delay = Processor_GetRegisterD() > 0 ? Processor_GetRegisterD() : abs(Processor_GetAccumulator());
 		processTable[executingProcessID].whenToWakeUp = delay + numberOfClockInterrupts + 1;
 
 		// Blocks the current process
