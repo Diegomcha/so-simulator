@@ -47,7 +47,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mv .github CHANGELOG.md version.txt .git* ../tmp/
           zip code.zip *
+          mv ../tmp/* .
           gh release upload ${{ steps.release.outputs.tag_name }} code.zip
           gh release upload v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} code.zip
           gh release upload v${{ steps.release.outputs.major }} code.zip

@@ -488,7 +488,7 @@ void OperatingSystem_HandleSystemCall()
 		PID = Heap_getFirst(readyToRunQueue[processTable[executingProcessID].queueID], numberOfReadyToRunProcesses[processTable[executingProcessID].queueID]);
 
 		// Check priorities match
-		if (PID != NOPROCESS && processTable[executingProcessID].priority == processTable[PID].priority)
+		if (PID != NOPROCESS && processTable[executingProcessID].priority != processTable[PID].priority)
 			PID = NOPROCESS;
 
 		// Show error message if no equivalent process was found
