@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.0.0](https://github.com/Diegomcha/so-simulator/compare/v1.0.4...v2.0.0) (2024-04-04)
+
+
+### Features
+
+* **v2:** :construction: finished exercise 6 ([1913dc4](https://github.com/Diegomcha/so-simulator/commit/1913dc4ea0bfd00aa16fc1f92fcda7e5047c4221))
+* **v2:** :sparkles: exercise 1 ([538c4b6](https://github.com/Diegomcha/so-simulator/commit/538c4b6ea44a8b1bdce7c9e1a1017f5807bb53e3))
+* **v2:** :sparkles: exercise 2 ([07e46a8](https://github.com/Diegomcha/so-simulator/commit/07e46a81dd52d5ed2b4cfeff1860a9d731989943))
+* **v2:** :sparkles: finished exercise 5 ([76c39f1](https://github.com/Diegomcha/so-simulator/commit/76c39f19a34dc8913f399b84ac5264392f4f02a6))
+* **v2:** :sparkles: finished exercises 3 & 4 ([70ce896](https://github.com/Diegomcha/so-simulator/commit/70ce896743a7d12bde2d76f7c8fa33b18963d11a))
+* **v2:** :sparkles: started working on exercise 5 ([573f789](https://github.com/Diegomcha/so-simulator/commit/573f78976467a27c9fd1152d57044f971761baf8))
+* **v2:** :sparkles: task2 finished ([2bd9b18](https://github.com/Diegomcha/so-simulator/commit/2bd9b18dafadb5313b573f15e8ed62da8d71ae10))
+* **v2:** :tada: added V2 skeleton ([d48f604](https://github.com/Diegomcha/so-simulator/commit/d48f60473904f32bcd6f1bce7cf6adf96f0f0862))
+
+
+### Bug Fixes
+
+* **v1:** :bug: fixed all errors discovered during V1 grading ([46e992a](https://github.com/Diegomcha/so-simulator/commit/46e992ae0285ac98c8ec4ca6dad41cdb4d99bc9f))
+* **v1:** :construction: fixed 1/3 errors found in the correction of the project V1 ([6351123](https://github.com/Diegomcha/so-simulator/commit/63511237357aea71c7b101adb57ae524554e97b9))
+* **v2:** :bug: fixed a typo in a STD message ([997ebcd](https://github.com/Diegomcha/so-simulator/commit/997ebcdbde824c50ef3228b5e7be78216234a9b2))
+
+
+### Miscellaneous Chores
+
+* :bookmark: release 2.0.0 ([fabf137](https://github.com/Diegomcha/so-simulator/commit/fabf13739032fc44bcc7e8079e72ac79e2050a01))
+
 ## [1.0.4](https://github.com/Diegomcha/so-simulator/compare/v1.0.3...v1.0.4) (2024-03-13)
 
 
