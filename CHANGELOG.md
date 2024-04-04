@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/Diegomcha/so-simulator/compare/v2.0.0...v2.0.1) (2024-04-04)
+
+
+### Miscellaneous Chores
+
+* **v2:** :bookmark: release 2.0.1 ([d3dea1c](https://github.com/Diegomcha/so-simulator/commit/d3dea1c3dac5a68397df734a7a04ac04063c968c))
+
 ## [2.0.0](https://github.com/Diegomcha/so-simulator/compare/v1.0.4...v2.0.0) (2024-04-04)
 
 
