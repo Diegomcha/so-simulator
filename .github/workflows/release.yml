@@ -47,6 +47,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir ../tmp
           mv .github CHANGELOG.md version.txt .git* ../tmp/
           zip code.zip *
           mv ../tmp/* .
