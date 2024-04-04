@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/Diegomcha/so-simulator/compare/v2.0.2...v2.0.3) (2024-04-04)
+
+
+### Continuous Integration
+
+* **v2:** :bug: restoring CI ([e2da925](https://github.com/Diegomcha/so-simulator/commit/e2da925f590fc37c658aba21260cf251c431e2ea))
+
 ## [2.0.2](https://github.com/Diegomcha/so-simulator/compare/v2.0.1...v2.0.2) (2024-04-04)
 
 
