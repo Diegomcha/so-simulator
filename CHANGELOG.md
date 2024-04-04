@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/Diegomcha/so-simulator/compare/v2.0.3...v2.0.4) (2024-04-04)
+
+
+### Continuous Integration
+
+* **v2:** :bug: fixed zip command in CI ([123177c](https://github.com/Diegomcha/so-simulator/commit/123177c47bfbd7bea3a5de6bc156d1b5b6280ddf))
+
 ## [2.0.3](https://github.com/Diegomcha/so-simulator/compare/v2.0.2...v2.0.3) (2024-04-04)
 
 
