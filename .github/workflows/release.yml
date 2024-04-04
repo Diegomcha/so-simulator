@@ -48,7 +48,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           rm version.txt CHANGELOG.md
-          zip code.zip *
+          make clean
+          zip -r code.zip *
           gh release upload ${{ steps.release.outputs.tag_name }} code.zip
           make
           gh release upload ${{ steps.release.outputs.tag_name }} Simulator
