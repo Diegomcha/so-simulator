@@ -47,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          rm version.txt CHANGELOG.md
           make clean
+          rm -r version.txt CHANGELOG.md *log tests
           zip -r code.zip *
           gh release upload ${{ steps.release.outputs.tag_name }} code.zip
           make
