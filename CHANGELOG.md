@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/Diegomcha/so-simulator/compare/v2.0.4...v2.0.5) (2024-04-07)
+
+
+### Miscellaneous Chores
+
+* **v2:** :ambulance: adapt release script to task delivery requirements ([afb9d90](https://github.com/Diegomcha/so-simulator/commit/afb9d90553647716da2c7cce98271c09fcd9cecf))
+
 ## [2.0.4](https://github.com/Diegomcha/so-simulator/compare/v2.0.3...v2.0.4) (2024-04-04)
 
 
