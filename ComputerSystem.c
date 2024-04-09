@@ -54,7 +54,7 @@ void ComputerSystem_PowerOn(int argc, char *argv[], int paramIndex)
 	// Prints the program list
 	ComputerSystem_PrintProgramList();
 
-	// Initialize arrivalTimeQueue //TODO: ask this here or on OperatinSystem.c
+	// Initialize arrivalTimeQueue
 	arrivalTimeQueue = Heap_create(PROGRAMSMAXNUMBER);
 
 	// Request the OS to do the initial set of tasks. The last one will be
