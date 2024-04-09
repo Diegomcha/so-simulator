@@ -170,8 +170,8 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
 
-	// If we only managed to create SIP terminate execution
-	if (numCreatedProcesses == 1)
+	// If we only managed to create SIP & there are no new processes coming next, terminate execution
+	if (numCreatedProcesses == 1 && numberOfProgramsInArrivalTimeQueue == 0)
 		// Tell SIP we are ready to shutdown
 		OperatingSystem_ReadyToShutdown();
 
@@ -465,11 +465,11 @@ void OperatingSystem_TerminateExecutingProcess()
 		// One more user process that has terminated
 		numberOfNotTerminatedUserProcesses--;
 
-	if (numberOfNotTerminatedUserProcesses == 0)
-	{
+	// Check if there are unfinished processes and process to be newly created in the future before shutting down
+	if (numberOfNotTerminatedUserProcesses == 0 && numberOfProgramsInArrivalTimeQueue == 0)
 		// Simulation must finish, telling sipID to finish
 		OperatingSystem_ReadyToShutdown();
-	}
+
 	// Select the next process to execute (sipID if no more user processes)
 	int selectedProcess = OperatingSystem_ShortTermScheduler();
 
@@ -631,6 +631,11 @@ void OperatingSystem_HandleClockInterrupt()
 	// Log the general status if any process was woken up
 	if (wokenProcesses > 0)
 		OperatingSystem_PrintStatus();
+
+	// If there are no unfinished tasks finish the process SIP to shutdown
+	if (numberOfNotTerminatedUserProcesses == 0 && numberOfProgramsInArrivalTimeQueue == 0)
+		// Terminate SIP
+		OperatingSystem_TerminateExecutingProcess();
 
 	// * Preempting executing process
 
