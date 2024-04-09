@@ -1,6 +1,8 @@
-// V2-studentsCode
+// V3-studentsCode
 #ifndef COMPUTERSYSTEMBASE_H
 #define COMPUTERSYSTEMBASE_H
+
+#include "Heap.h"	// V3-studentsCode
 
 enum TimedMessages{ NO_TIMED_MESSAGE,TIMED_MESSAGE };
 
@@ -8,6 +10,8 @@ enum TimedMessages{ NO_TIMED_MESSAGE,TIMED_MESSAGE };
 int ComputerSystem_ObtainProgramList(int , char *[], int);
 void ComputerSystem_DebugMessage(int , int, char , ...);
 int ComputerSystem_PrepareAditionalPrograms(int , int , char *);
+void ComputerSystem_FillInArrivalTimeQueue(); // V3-studentsCode
+void ComputerSystem_PrintArrivalTimeQueue(); // V3-studentsCode
 
 // Sections in which we divide our simulator in terms of
 // debugging messages that show its internal working details
@@ -37,5 +41,10 @@ extern char defaultDebugLevel[];
 extern int intervalBetweenInterrupts; // V2-studentsCode
 
 #define DEFAULT_INTERVAL_BETWEEN_INTERRUPTS 5 // V2-studentsCode
+
+#ifdef ARRIVALQUEUE
+extern int numberOfProgramsInArrivalTimeQueue;	// V3-studentsCode
+extern heapItem *arrivalTimeQueue;			 	// V3-studentsCode
+#endif
 
 #endif

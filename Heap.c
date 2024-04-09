@@ -1,4 +1,4 @@
-// V2-studentsCode
+// V3-studentsCode
 #include <stdlib.h>
 #include <malloc.h>
 #include "Heap.h"
@@ -22,7 +22,7 @@ heapItem * Heap_create(int maxSize){
 // Insertion of a PID into a binary heap
 // info: PID or other info to insert
 // heap: Binary heap to insert: user o daemon ready queue, sleeping queue, ...
-// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, ...
+// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, QUEUE_ARRIVAL, ...
 // numElem: number of elements actually into the queue, if successful is increased by one
 // limit: max size of the queue
 // return 0/-1  ok/fail
@@ -39,7 +39,7 @@ int Heap_add(int info, heapItem heap[], int queueType, int *numElem){ //, int li
 
 // Extract the more priority item
 // heap: Binary heap to extract: user o daemon ready queue, sleeping queue, ...
-// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, ...
+// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, QUEUE_ARRIVAL, ...
 // numElem: number of elements actually into the queue, if successful is decremented by one
 // return more priority item into the queue
 int Heap_poll(heapItem heap[], int queueType, int *numElem) {
@@ -121,6 +121,11 @@ int Heap_compare_wakeup(int value1, int value2) {
 #endif
 }
 
+// Auxiliary for arrival-time comparations // V3-studentsCode
+int Heap_compare_arrival(int value1, int value2) {
+  return programList[value2]->arrivalTime - programList[value1]->arrivalTime;
+}
+
 // Auxiliary for assert-time comparations
 int Heap_compare_assertsTime(int value1, int value2) {
   return asserts[value2].time - asserts[value1].time;
@@ -135,6 +140,9 @@ int Heap_compare(heapItem value1, heapItem value2, int queueType) {
 		break;
 	case QUEUE_PRIORITY:
 		primaryKey= Heap_compare_priority(value1.info, value2.info);
+		break;
+	case QUEUE_ARRIVAL:
+		primaryKey= Heap_compare_arrival(value1.info, value2.info);
 		break;
 	case QUEUE_ASSERTS:
 		primaryKey= Heap_compare_assertsTime(value1.info, value2.info);

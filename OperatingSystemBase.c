@@ -1,4 +1,4 @@
-// V2-StudentsCode
+// V3-studentsCode
 #include "OperatingSystemBase.h"
 #include "OperatingSystem.h"
 #include "Processor.h"
@@ -38,7 +38,18 @@ int OperatingSystem_ObtainAnEntryInTheProcessTable() {
 		if (processTable[entry].busy==0){
 			return entry;
 		} else {
-			index++;
+			if (++index==PROCESSTABLEMAXSIZE) { // if no entries free, remove zombie proceses  // V3-studentsCode
+				int i;
+				for (i=0;i<PROCESSTABLEMAXSIZE;i++)
+					if (processTable[i].busy && (processTable[i].state==EXIT)) {
+						ComputerSystem_DebugMessage(TIMED_MESSAGE,79,SYSPROC
+							,i,programList[processTable[i].programListIndex]->executableName
+							,processTable[i].processSize
+							,processTable[i].initialPhysicalAddress);
+						processTable[i].busy=0;
+						index=0; // New search after liberation of PCB
+					}
+			}
 		}
 	}
 	return NOFREEENTRY;
@@ -198,25 +209,18 @@ void OperatingSystem_TerminatingSIP() {
 	executingProcessID=NOPROCESS;
 }
 
-// Show time messages 
-// void OperatingSystem_ShowTime(char section) {  // V2-studentsCode
-// 	ComputerSystem_DebugMessage(100,section,Processor_PSW_BitState(EXECUTION_MODE_BIT)?"\t":"");
-// 	ComputerSystem_DebugMessage(Processor_PSW_BitState(EXECUTION_MODE_BIT)?95:94,section,Clock_GetTime());
-// }
-
 // Show general status
 void OperatingSystem_PrintStatus(){   // V2-studentsCode
 	OperatingSystem_PrintExecutingProcessInformation(); // Show executing process information
 	OperatingSystem_PrintReadyToRunQueue();  // Show Ready to run queues implemented for students
 	OperatingSystem_PrintSleepingProcessQueue(); // Show Sleeping process queue
 	OperatingSystem_PrintProcessTableAssociation(); // Show PID-Program's name association
-
+	ComputerSystem_PrintArrivalTimeQueue(); // Show arrival queue of programs  // V3-studentsCode
 }
 
  // Show Executing process information
 void OperatingSystem_PrintExecutingProcessInformation(){   // V2-studentsCode
 
-	// OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
 	if (executingProcessID>=0)
 #ifdef SLEEPINGQUEUE
 		// Show message "Running Process Information:\n\t\t[PID: executingProcessID, Priority: priority, WakeUp: whenToWakeUp, Queue: queueID]\n"
@@ -239,7 +243,6 @@ void OperatingSystem_PrintSleepingProcessQueue(){   // V2-studentsCode
 #ifdef SLEEPINGQUEUE
 
 	int i;
-	// OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
 	//  Show message "SLEEPING Queue:\n\t\t");
 	ComputerSystem_DebugMessage(TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"SLEEPING Queue:\n\t\t");
 	if (numberOfSleepingProcesses>0)
@@ -260,18 +263,51 @@ void OperatingSystem_PrintSleepingProcessQueue(){   // V2-studentsCode
 }
 
 void OperatingSystem_PrintProcessTableAssociation() {  // V2-studentsCode
-  int i;
-//   OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
+  int i,count=0;
   //  Show message "Process table association with program's name:");
   ComputerSystem_DebugMessage(TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"PID association with program's name:\n");
   for (i=0; i< PROCESSTABLEMAXSIZE; i++) {
   	if (processTable[i].busy) {
   		// Show message PID -> program's name\n
+		count++;
   		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,76,SHORTTERMSCHEDULE,i,programList[processTable[i].programListIndex]->executableName);
+		if (processTable[i].state==EXIT) 
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,99,SHORTTERMSCHEDULE," Zombie process!");
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\n");
   	}
+  }
+  if (count==0){
+  	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\t\t[--- NO process association ---]");
+	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\n");
   }
 }
 
 int OperatingSystem_GetExecutingProcessID(){
 	return executingProcessID;
 };
+
+// This function returns:
+// 		EMPTYQUEUE (-1) if no programs in arrivalTimeQueue
+//		YES (1) if any program arrivalTime is now
+//		NO (0) else
+// considered by the LTS to create processes at the current time
+int OperatingSystem_IsThereANewProgram() { // V3-studentsCode
+#ifdef ARRIVALQUEUE
+        int currentTime;
+		int programArrivalTime;
+		int indexInProgramList = Heap_getFirst(arrivalTimeQueue,numberOfProgramsInArrivalTimeQueue);
+
+		if (indexInProgramList < 0)
+		  return EMPTYQUEUE;  // No new programs in command line list of programs
+		
+		// Get the current simulation time
+        currentTime = Clock_GetTime();
+		
+		// Get arrivalTime of next program
+		programArrivalTime = programList[indexInProgramList]->arrivalTime; 
+
+		if (programArrivalTime <= currentTime)
+		  return YES;  //  There'is new program to start
+#endif		 
+		return NO;  //  No program in current time
+}

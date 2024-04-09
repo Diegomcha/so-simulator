@@ -1,7 +1,8 @@
-// V2-studentsCode
+// V3-studentsCode
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "ComputerSystem.h"
 #include "ComputerSystemBase.h"
 #include "Processor.h"
@@ -38,6 +39,11 @@ PROGRAMS_DATA *programList[PROGRAMSMAXNUMBER];
 char STUDENT_MESSAGES_FILE[MAXFILENAMELENGTH]="messagesSTD.txt";
 
 char USER_PROGRAMS_FILE[MAXFILENAMELENGTH]="";
+#ifdef ARRIVALQUEUE
+	char * typeProgramNames []={"USER-PROGRAM","DAEMON-PROGRAM"}; 
+	extern heapItem * arrivalTimeQueue;
+	extern int numberOfProgramsInArrivalTimeQueue;
+#endif
 
 // Fill in the array named userProgramsList with the information given
 // by the user in the command line
@@ -257,5 +263,41 @@ int ComputerSystem_PrepareAditionalPrograms(int programListNextPosition, int typ
 	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,77,POWERON,numberOfPrograms,type==DAEMONPROGRAM ? "daemon":"user", programsFileName);
 
 	return programListNextPosition;
+}
+
+// Fill ArrivalTimeQueue heap with user program from parameters or file and daemons 
+void ComputerSystem_FillInArrivalTimeQueue() { // V3-studentsCode
+#ifdef ARRIVALQUEUE
+
+  int arrivalIndex = 0; 
+
+	while (programList[arrivalIndex]!=NULL && arrivalIndex<PROGRAMSMAXNUMBER) {
+	  Heap_add(arrivalIndex,arrivalTimeQueue,QUEUE_ARRIVAL,&arrivalIndex);
+	}
+	numberOfProgramsInArrivalTimeQueue=arrivalIndex;
+#endif
+}
+
+// Print arrivalTiemQueue program information
+void ComputerSystem_PrintArrivalTimeQueue(){ // V3-studentsCode
+#ifdef ARRIVALQUEUE
+  int i;
+  
+  // Show message "Arrival Time Queue: "
+  ComputerSystem_DebugMessage(TIMED_MESSAGE,100,LONGTERMSCHEDULE,"Arrival Time Queue:\n");
+  if (numberOfProgramsInArrivalTimeQueue>0) {
+	for (i=0; i< numberOfProgramsInArrivalTimeQueue; i++) {
+	  // Show message [executableName,arrivalTime]
+	  ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,70,LONGTERMSCHEDULE,programList[arrivalTimeQueue[i].info]->executableName,
+			programList[arrivalTimeQueue[i].info]->arrivalTime,
+			typeProgramNames[programList[arrivalTimeQueue[i].info]->type-100]);
+	}
+  }
+  else {
+  	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\t\t[--- empty queue ---]");
+	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\n");
+  }
+
+ #endif
 }
 
