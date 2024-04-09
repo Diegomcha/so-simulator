@@ -13,4 +13,7 @@ void ComputerSystem_PowerOff();
 extern PROGRAMS_DATA *programList[];
 extern char STUDENT_MESSAGES_FILE[];
 
+// V3-1b
+#define ARRIVALQUEUE
+
 #endif

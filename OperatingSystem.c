@@ -145,6 +145,12 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// Include in program list all user or system daemon processes
 	OperatingSystem_PrepareDaemons(programsFromFileIndex);
 
+	// Fill the ArrivalTimeQueue before LTS V3-1c
+	ComputerSystem_FillInArrivalTimeQueue();
+
+	// Print system status V3-1d
+	OperatingSystem_PrintStatus();
+
 	// Create all user processes from the information given in the command line
 	int numCreatedProcesses = OperatingSystem_LongTermScheduler();
 

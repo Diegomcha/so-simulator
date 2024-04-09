@@ -13,6 +13,10 @@
 extern int COLOURED;
 extern char *debugLevel;
 
+// V3-1a
+heapItem *arrivalTimeQueue;
+int numberOfProgramsInArrivalTimeQueue = 0;
+
 // Functions prototypes
 void ComputerSystem_PrintProgramList();
 
@@ -49,6 +53,9 @@ void ComputerSystem_PowerOn(int argc, char *argv[], int paramIndex)
 
 	// Prints the program list
 	ComputerSystem_PrintProgramList();
+
+	// Initialize arrivalTimeQueue //TODO: ask this here or on OperatinSystem.c
+	arrivalTimeQueue = Heap_create(PROGRAMSMAXNUMBER);
 
 	// Request the OS to do the initial set of tasks. The last one will be
 	// the processor allocation to the process with the highest priority
