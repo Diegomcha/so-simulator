@@ -190,8 +190,13 @@ int OperatingSystem_LongTermScheduler()
 	int PID, i,
 		numberOfSuccessfullyCreatedProcesses = 0;
 
-	for (i = 0; programList[i] != NULL && i < PROGRAMSMAXNUMBER; i++)
+	// While there are new programs that need to be created create them
+	while (OperatingSystem_IsThereANewProgram() == YES)
 	{
+		// Extract the new program
+		i = Heap_poll(arrivalTimeQueue, QUEUE_ARRIVAL, &numberOfProgramsInArrivalTimeQueue);
+
+		// Create the program
 		PID = OperatingSystem_CreateProcess(i);
 
 		// Handle process creation errors and display appropriate messages
