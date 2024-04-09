@@ -2,5 +2,10 @@
   "files.exclude": {
     "**/*.o": true
   },
-  "conventionalCommits.scopes": ["v0", "v1", "v2"]
+  "conventionalCommits.scopes": [
+    "v0",
+    "v1",
+    "v2",
+    "v3"
+  ]
 }

@@ -258,8 +258,9 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	// PCB initialization
 	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
 
+	// Removed for V3
 	// Show message "Process [PID] created from program [executableName]\n"
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 70, SYSPROC, PID, executableProgram->executableName);
+	// ComputerSystem_DebugMessage(TIMED_MESSAGE, 70, SYSPROC, PID, executableProgram->executableName);
 
 	return PID;
 }
