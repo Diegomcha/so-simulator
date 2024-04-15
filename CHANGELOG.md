@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.0.0](https://github.com/Diegomcha/so-simulator/compare/v2.0.5...v3.0.0) (2024-04-15)
+
+
+### Features
+
+* **v3:** :construction: exercise 1 ([4233c92](https://github.com/Diegomcha/so-simulator/commit/4233c9265a801ed5d9be8704a8fa45309815d353))
+* **v3:** :sparkles: added V3 base code ([d38a47d](https://github.com/Diegomcha/so-simulator/commit/d38a47d1541b69dda94324a88187338f5a2fd3bc))
+* **v3:** :sparkles: exercise 2 ([209e47b](https://github.com/Diegomcha/so-simulator/commit/209e47b957c132e850ebf56966907027c8e8eb50))
+* **v3:** :sparkles: exercise 4 finished ([d481d09](https://github.com/Diegomcha/so-simulator/commit/d481d09cc57725613681ad142c106a87ec7b7b2e))
+* **v3:** :sparkles: finished exercise 1 ([77244c9](https://github.com/Diegomcha/so-simulator/commit/77244c931f7cf7661314449f6881c0ca0b1bdb09))
+* **v3:** :sparkles: finished exercise 3 ([5501835](https://github.com/Diegomcha/so-simulator/commit/5501835908cd97ecf811faf0a388f0467bd6e52c))
+
+
+### Bug Fixes
+
+* **v3:** :bug: fixed bug found in base files ([250577e](https://github.com/Diegomcha/so-simulator/commit/250577e54ac3ffed7a9644ff03a2ee07f7735db1))
+* **v3:** :bug: removed extra debug message ([ebaa5fd](https://github.com/Diegomcha/so-simulator/commit/ebaa5fd83bbb2519423fb90d061a7c570945e523))
+
 ## [2.0.5](https://github.com/Diegomcha/so-simulator/compare/v2.0.4...v2.0.5) (2024-04-07)
 
 
