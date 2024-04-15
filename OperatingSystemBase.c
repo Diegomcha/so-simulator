@@ -196,9 +196,9 @@ void OperatingSystem_ReadyToShutdown(){
 	// or changing stacked PC pointing to TRAP 3 instruction if not dispatched because is running
 		Processor_SetSSP(MAINMEMORYSIZE-1);
 		Processor_PushInSystemStack(processTable[sipID].copyOfPCRegister);
-#ifdef SLEEPINGQUEUE
-		processTable[sipID].copyOfPSWRegister|= ((unsigned int) 1) << INTERRUPT_MASKED_BIT;  // V2-studentsCode
-#endif
+// #ifdef SLEEPINGQUEUE
+		// processTable[sipID].copyOfPSWRegister|= ((unsigned int) 1) << INTERRUPT_MASKED_BIT;  // V2-studentsCode
+// #endif
 		Processor_PushInSystemStack(processTable[sipID].copyOfPSWRegister);
 	}
 }
