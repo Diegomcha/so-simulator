@@ -82,7 +82,8 @@ int PROCESSTABLEMAXSIZE = 4;
 int numberOfClockInterrupts = 0;
 
 // For debug messages
-char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
+char *stateNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
+char *exceptionNames[4] = {"division by zero", "invalid processor mode", "invalid address", "invalid instruction"};
 
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int programsFromFileIndex)
@@ -290,7 +291,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 111, SYSPROC, PID, statesNames[NEW], programList[processPLIndex]->executableName);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 111, SYSPROC, PID, stateNames[NEW], programList[processPLIndex]->executableName);
 
 	processTable[PID].busy = 1;
 	processTable[PID].initialPhysicalAddress = initialPhysicalAddress;
@@ -323,7 +324,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 void OperatingSystem_MoveToTheREADYState(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, stateNames[processTable[PID].state], stateNames[READY]);
 
 	if (Heap_add(PID, readyToRunQueue[processTable[PID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[PID].queueID])) >= 0)
 		processTable[PID].state = READY;
@@ -369,7 +370,7 @@ int OperatingSystem_ExtractFromReadyToRun()
 void OperatingSystem_Dispatch(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[EXECUTING]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, stateNames[processTable[PID].state], stateNames[EXECUTING]);
 
 	//  The process identified by PID becomes the current executing process
 	executingProcessID = PID;
@@ -432,7 +433,7 @@ void OperatingSystem_SaveContext(int PID)
 void OperatingSystem_HandleException()
 {
 	// Show message "Process [executingProcessID] has generated an exception and is terminating\n"
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 71, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 140, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, exceptionNames[Processor_GetRegisterD()]);
 
 	OperatingSystem_TerminateExecutingProcess();
 
@@ -444,7 +445,7 @@ void OperatingSystem_HandleException()
 void OperatingSystem_TerminateExecutingProcess()
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, stateNames[processTable[executingProcessID].state], stateNames[EXIT]);
 
 	processTable[executingProcessID].state = EXIT;
 
@@ -673,7 +674,7 @@ void OperatingSystem_BlockRunningProcess()
 
 	// * Move executing process to the blocked state
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[BLOCKED]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, stateNames[processTable[executingProcessID].state], stateNames[BLOCKED]);
 
 	// Add the process to the sleeping processes queue
 	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &(numberOfSleepingProcesses)) >= 0)
