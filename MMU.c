@@ -17,13 +17,16 @@ int registerCTRL_MMU;
 
 void MMU_SetCTRL(int ctrl)
 {
+	// Keep track of whether the MMU failed or not
+	int failed = 0;
+
 	registerCTRL_MMU = ctrl & 0x3;
 	switch (registerCTRL_MMU)
 	{
 	case CTRLREAD:
 		if (Processor_PSW_BitState(EXECUTION_MODE_BIT))
 		{ // Protected mode
-			if (registerMAR_MMU < MAINMEMORYSIZE)
+			if (0 <= registerMAR_MMU && registerMAR_MMU < MAINMEMORYSIZE)
 			{
 				// Send to the main memory HW the physical address to write in
 				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
@@ -37,10 +40,11 @@ void MMU_SetCTRL(int ctrl)
 			{
 				// Fail
 				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
 			}
 		}
 		else // Non-Protected mode
-			if (registerMAR_MMU < registerLimit_MMU)
+			if (0 <= registerMAR_MMU && registerMAR_MMU < registerLimit_MMU)
 			{
 				// Physical address = logical address + base register
 				registerMAR_MMU += registerBase_MMU;
@@ -56,11 +60,12 @@ void MMU_SetCTRL(int ctrl)
 			{
 				// Fail
 				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
 			}
 		break;
 	case CTRLWRITE:
 		if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode
-			if (registerMAR_MMU < MAINMEMORYSIZE)
+			if (0 <= registerMAR_MMU && registerMAR_MMU < MAINMEMORYSIZE)
 			{
 				// Send to the main memory HW the physical address to write in
 				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
@@ -74,9 +79,10 @@ void MMU_SetCTRL(int ctrl)
 			{
 				// Fail
 				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
 			}
 		else // Non-Protected mode
-			if (registerMAR_MMU < registerLimit_MMU)
+			if (0 <= registerMAR_MMU && registerMAR_MMU < registerLimit_MMU)
 			{
 				// Physical address = logical address + base register
 				registerMAR_MMU += registerBase_MMU;
@@ -92,10 +98,12 @@ void MMU_SetCTRL(int ctrl)
 			{
 				// Fail
 				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
 			}
 		break;
 	default:
 		registerCTRL_MMU |= CTRL_FAIL;
+		failed = 1;
 		break;
 	}
 
@@ -103,7 +111,7 @@ void MMU_SetCTRL(int ctrl)
 	Buses_write_ControlBus_From_To(MMU, CPU);
 
 	// Raise exception whenever the MMU fails to compute the physical address
-	if (registerCTRL_MMU == CTRL_FAIL)
+	if (failed == 1)
 		Processor_RaiseException(INVALIDADDRESS);
 }
 

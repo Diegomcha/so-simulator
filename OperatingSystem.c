@@ -638,7 +638,7 @@ void OperatingSystem_HandleClockInterrupt()
 	}
 
 	// * Creating newly arrived process
-	wokenProcesses += OperatingSystem_LongTermScheduler();
+	OperatingSystem_LongTermScheduler();
 
 	// Log the general status if any process was woken up
 	if (wokenProcesses > 0)

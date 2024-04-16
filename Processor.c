@@ -425,11 +425,3 @@ void Processor_SetRegisterD(int reg)
 {
 	registerD_CPU = reg;
 }
-
-// V4-1b
-// Function to raise an exception
-void Processor_RaiseException(int typeOfException)
-{
-	Processor_RaiseInterrupt(EXCEPTION_BIT);
-	registerD_CPU = typeOfException;
-}

@@ -10,8 +10,16 @@
       "request": "launch",
       "program": "${workspaceFolder}/Simulator",
       "args": [
-        "programNotExists",
-        "100"
+        "programV4-1",
+        "88",
+        "programV4-2",
+        "66",
+        "programV4-3",
+        "44",
+        "programV4-4",
+        "22",
+        "programV4-5",
+        "0"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
