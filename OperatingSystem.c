@@ -112,6 +112,11 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// Space for the sleeping processes queue
 	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
 
+	// Initialize partition table
+
+	OperatingSystem_InitializePartitionTable();
+
+	// Start loading Operating System code
 	programFile = fopen("OperatingSystemCode", "r");
 	if (programFile == NULL)
 	{

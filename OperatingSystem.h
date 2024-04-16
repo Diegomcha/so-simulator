@@ -29,6 +29,10 @@ enum TypeOfReadyToRunProcessQueues
 // Exercise 5-c of V2
 #define SLEEPINGQUEUE
 
+// V4-5a
+// Partitions configuration file name definition
+#define MEMCONFIG
+
 // Contains the possible type of programs
 enum ProgramTypes
 {
