@@ -98,8 +98,13 @@ void MMU_SetCTRL(int ctrl)
 		registerCTRL_MMU |= CTRL_FAIL;
 		break;
 	}
+
 	// registerCTRL_MMU return value was CTRL_SUCCESS or CTRL_FAIL
 	Buses_write_ControlBus_From_To(MMU, CPU);
+
+	// Raise exception whenever the MMU fails to compute the physical address
+	if (registerCTRL_MMU == CTRL_FAIL)
+		Processor_RaiseException(INVALIDADDRESS);
 }
 
 // Getter for registerCTRL_MMU

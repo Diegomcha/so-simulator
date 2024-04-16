@@ -129,7 +129,7 @@ void Processor_DecodeAndExecuteInstruction()
 	// Instruction DIV
 	case DIV_INST:
 		if (operand2 == 0)
-			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			Processor_RaiseException(DIVISIONBYZERO);
 		else
 		{
 			registerAccumulator_CPU = operand1 / operand2;
@@ -265,7 +265,7 @@ void Processor_DecodeAndExecuteInstruction()
 		// If in user mode, raise an exception
 		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
 		{
-			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			Processor_RaiseException(INVALIDPROCESSORMODE);
 			break;
 		}
 
@@ -277,7 +277,7 @@ void Processor_DecodeAndExecuteInstruction()
 		// If in user mode, raise an exception
 		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
 		{
-			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			Processor_RaiseException(INVALIDPROCESSORMODE);
 			break;
 		}
 
@@ -297,7 +297,7 @@ void Processor_DecodeAndExecuteInstruction()
 		// If in user mode, raise an exception
 		if (Processor_PSW_BitState(EXECUTION_MODE_BIT) == 0)
 		{
-			Processor_RaiseInterrupt(EXCEPTION_BIT);
+			Processor_RaiseException(INVALIDPROCESSORMODE);
 			break;
 		}
 
@@ -352,8 +352,8 @@ void Processor_DecodeAndExecuteInstruction()
 
 	// Unknown instruction
 	default:
-		operationCode = NONEXISTING_INST;
-		registerPC_CPU++;
+		// Raise an exception whenever an invalid exception is trying to execute
+		Processor_RaiseException(INVALIDINSTRUCTION);
 		break;
 	}
 
@@ -424,4 +424,12 @@ int Processor_GetRegisterD()
 void Processor_SetRegisterD(int reg)
 {
 	registerD_CPU = reg;
+}
+
+// V4-1b
+// Function to raise an exception
+void Processor_RaiseException(int typeOfException)
+{
+	Processor_RaiseInterrupt(EXCEPTION_BIT);
+	registerD_CPU = typeOfException;
 }
