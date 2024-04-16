@@ -1,4 +1,10 @@
-// V2-studentsCode
+// V4-studentsCode
+// Memory System messages
+55,Main memory state (@G%s@@):\n
+56,\t\t[@G%d@@] [@G%d@@ -> @G%d@@]
+57,[@G%d - %s@@]\n
+58,[@G%s@@]\n
+
 // Message system messages
 60,Illegal Message Number in line @R%d@@ of file @R%s@@\n
 61,Illegal Message Format in line @R%d@@ of file @R%s@@\n

@@ -1,4 +1,3 @@
-// V1
 #ifndef PROCESSORBASE_H
 #define PROCESSORBASE_H
 
@@ -6,7 +5,7 @@
 
 enum Instruction {
 NONEXISTING_INST,
-#define INST(name) name ## _INST, // name ## _INST concatena y define los enumerados ADD_INST, y SHIFT_INST
+#define INST(name) name ## _INST, // name ## _INST concatena y define los enumerados ADD_INST, SHIFT_INST, ...
 #include "Instructions.def"
 #undef INST
 LAST_INST,
@@ -85,5 +84,6 @@ int Processor_DecodeOperand1(BUSDATACELL);
 int Processor_DecodeOperand2(BUSDATACELL);
 void Processor_GetCodedInstruction(char * , BUSDATACELL );
 int Processor_ToInstruction(char *); 
+void Processor_RaiseException(int);
 
 #endif
