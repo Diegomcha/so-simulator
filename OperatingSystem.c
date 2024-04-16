@@ -553,6 +553,17 @@ void OperatingSystem_HandleSystemCall()
 		// Print general status
 		OperatingSystem_PrintStatus();
 		break;
+	// Handle invalid syscalls
+	default:
+		// Show message
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 141, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, systemCallID);
+
+		// Terminate process
+		OperatingSystem_TerminateExecutingProcess();
+
+		// Print general status
+		OperatingSystem_PrintStatus();
+		break;
 	}
 }
 
