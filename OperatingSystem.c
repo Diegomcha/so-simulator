@@ -113,7 +113,6 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
 
 	// Initialize partition table
-
 	OperatingSystem_InitializePartitionTable();
 
 	// Start loading Operating System code
@@ -214,6 +213,8 @@ int OperatingSystem_LongTermScheduler()
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "it does not exist");
 		else if (PID == PROGRAMNOTVALID)
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "invalid priority or size");
+		else if (PID == MEMORYFULL)
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 144, ERROR, programList[i]->executableName);
 		else
 		{ // Process successfully created
 			numberOfSuccessfullyCreatedProcesses++;
@@ -237,7 +238,7 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 {
 	int PID;
 	int processSize;
-	int loadingPhysicalAddress;
+	int partitionIndex;
 	int priority;
 	FILE *programFile;
 	PROGRAMS_DATA *executableProgram = programList[indexOfExecutableProgram];
@@ -262,18 +263,25 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	if (priority < 0)
 		return priority; // PROGRAMNOTVALID
 
-	// Obtain enough memory space if available
-	loadingPhysicalAddress = OperatingSystem_ObtainMainMemory(processSize, PID);
-	if (loadingPhysicalAddress < 0)
-		return loadingPhysicalAddress; // TOOBIGPROCESS
+	// * Obtain enough memory space if available
+
+	// Log the memory request
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 142, SYSMEM, PID, executableProgram->executableName, processSize);
+
+	partitionIndex = OperatingSystem_ObtainMainMemory(processSize, PID);
+	if (partitionIndex < 0)
+		return partitionIndex; // TOOBIGPROCESS, MEMORYFULL
+
+	// Log what the assigned partition was
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 143, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, executableProgram->executableName);
 
 	// Load program in the allocated memory if possible
-	int loadStatus = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
+	int loadStatus = OperatingSystem_LoadProgram(programFile, partitionsTable[partitionIndex].initAddress, processSize);
 	if (loadStatus < 0)
 		return loadStatus; // TOOBIGPROCESS
 
 	// PCB initialization
-	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
+	OperatingSystem_PCBInitialization(PID, partitionsTable[partitionIndex].initAddress, processSize, priority, indexOfExecutableProgram);
 
 	// Removed for V3
 	// Show message "Process [PID] created from program [executableName]\n"
@@ -282,14 +290,53 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	return PID;
 }
 
-// Main memory is assigned in chunks. All chunks are the same size. A process
-// always obtains the chunk whose position in memory is equal to the processor identifier
+// Obtains a partition index from Main Memory if one is available
 int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 {
-	if (processSize > MAINMEMORYSECTIONSIZE)
-		return TOOBIGPROCESS;
+	// * Find the best fit partition
 
-	return PID * MAINMEMORYSECTIONSIZE;
+	int bestPartitionIndex = -1;
+	int numFreePartitions = 0;
+
+	// Go through all partitions
+	for (int i = 0; i < PARTITIONTABLEMAXSIZE; i++)
+	{
+		// Skip partitions that were already allocated to other processes
+		if (partitionsTable[i].PID != NOPROCESS)
+			continue;
+
+		// Increase the number of free partitions found
+		numFreePartitions++;
+
+		// Skip partitions that are too small
+		if (partitionsTable[i].size < processSize)
+			continue;
+
+		// If we have no partition yet, assign the first one that fits
+		if (bestPartitionIndex == -1 || partitionsTable[i].size < partitionsTable[bestPartitionIndex].size || partitionsTable[i].initAddress < partitionsTable[bestPartitionIndex].initAddress)
+			bestPartitionIndex = i;
+		// If the size of the partition fits and is lower than the best partition we found until now, change the partition
+		else if (partitionsTable[i].size < partitionsTable[bestPartitionIndex].size)
+			bestPartitionIndex = i;
+		// If the size matches, choose the one with the lowest address
+		else if (partitionsTable[i].size == partitionsTable[bestPartitionIndex].size && partitionsTable[i].initAddress < partitionsTable[bestPartitionIndex].initAddress)
+			bestPartitionIndex = i;
+	}
+
+	// If we were not able to find a fit
+	if (bestPartitionIndex == -1)
+	{
+		// If there were free partitions and the process was too big, return TOOBIGPROCESS
+		if (numFreePartitions > 0)
+			return TOOBIGPROCESS;
+		// If there were no free partitions, return MEMORYFULL
+		else
+			return MEMORYFULL;
+	}
+
+	// Assign partition & return the index
+	partitionsTable[bestPartitionIndex].PID = PID;
+	return bestPartitionIndex;
 }
 
 // Assign initial values to all fields inside the PCB
