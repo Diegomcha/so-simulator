@@ -21,7 +21,8 @@ void OperatingSystem_TerminateExecutingProcess();
 int OperatingSystem_LongTermScheduler();
 void OperatingSystem_PreemptRunningProcess();
 int OperatingSystem_CreateProcess(int);
-int OperatingSystem_ObtainMainMemory(int, int);
+int OperatingSystem_ObtainMainMemory(int);
+void OperatingSystem_ReleaseMainMemory(int);
 int OperatingSystem_ShortTermScheduler();
 int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
@@ -47,6 +48,9 @@ int executingProcessID = NOPROCESS;
 
 // Identifier of the System Idle Process
 int sipID;
+
+// Number of partitions in the system
+int numberOfPartitions;
 
 // Initial PID for assignation (Not assigned)
 int initialPID = -1;
@@ -113,7 +117,7 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
 
 	// Initialize partition table
-	OperatingSystem_InitializePartitionTable();
+	numberOfPartitions = OperatingSystem_InitializePartitionTable();
 
 	// Start loading Operating System code
 	programFile = fopen("OperatingSystemCode", "r");
@@ -263,25 +267,31 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	if (priority < 0)
 		return priority; // PROGRAMNOTVALID
 
-	// * Obtain enough memory space if available
+	// * Obtain enough memory space if available & load program if possible
 
-	// Log the memory request
+	// Log the memory request and show the initial state of the partitions table
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 142, SYSMEM, PID, executableProgram->executableName, processSize);
+	OperatingSystem_ShowPartitionTable("before allocating memory");
 
-	partitionIndex = OperatingSystem_ObtainMainMemory(processSize, PID);
+	// Obtain best partition
+	partitionIndex = OperatingSystem_ObtainMainMemory(processSize);
 	if (partitionIndex < 0)
 		return partitionIndex; // TOOBIGPROCESS, MEMORYFULL
-
-	// Log what the assigned partition was
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 143, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, executableProgram->executableName);
 
 	// Load program in the allocated memory if possible
 	int loadStatus = OperatingSystem_LoadProgram(programFile, partitionsTable[partitionIndex].initAddress, processSize);
 	if (loadStatus < 0)
 		return loadStatus; // TOOBIGPROCESS
 
-	// PCB initialization
+	// Allocate partition & log the allocation
+	partitionsTable[partitionIndex].PID = PID;
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 143, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, executableProgram->executableName);
+
+	// * PCB initialization
 	OperatingSystem_PCBInitialization(PID, partitionsTable[partitionIndex].initAddress, processSize, priority, indexOfExecutableProgram);
+
+	// Show the updated state of the partitions table (here because this function relies on the process table entry)
+	OperatingSystem_ShowPartitionTable("after allocating memory");
 
 	// Removed for V3
 	// Show message "Process [PID] created from program [executableName]\n"
@@ -291,7 +301,7 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 }
 
 // Obtains a partition index from Main Memory if one is available
-int OperatingSystem_ObtainMainMemory(int processSize, int PID)
+int OperatingSystem_ObtainMainMemory(int processSize)
 {
 	// * Find the best fit partition
 
@@ -299,7 +309,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 	int existsBigEnoughPartition = 0;
 
 	// Go through all partitions
-	for (int i = 0; i < PARTITIONTABLEMAXSIZE; i++)
+	for (int i = 0; i < numberOfPartitions; i++)
 	{
 		// Skip partitions that are too small
 		if (partitionsTable[i].size < processSize)
@@ -313,7 +323,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 			continue;
 
 		// If we have no partition yet, assign the first one that fits
-		if (bestPartitionIndex == -1 || partitionsTable[i].size < partitionsTable[bestPartitionIndex].size || partitionsTable[i].initAddress < partitionsTable[bestPartitionIndex].initAddress)
+		if (bestPartitionIndex == -1)
 			bestPartitionIndex = i;
 		// If the size of the partition fits and is lower than the best partition we found until now, change the partition
 		else if (partitionsTable[i].size < partitionsTable[bestPartitionIndex].size)
@@ -334,9 +344,30 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 			return MEMORYFULL;
 	}
 
-	// Assign partition & return the index
-	partitionsTable[bestPartitionIndex].PID = PID;
+	// Return the best partition index
 	return bestPartitionIndex;
+}
+
+void OperatingSystem_ReleaseMainMemory(int PID)
+{
+	// Log the partition table before releasing memory
+	OperatingSystem_ShowPartitionTable("before releasing memory");
+
+	// Store the PID of the program which had the partition assigned
+	int partitionIndex = 0;
+
+	// Go through all partitions until finding the one assigned to the process
+	while (partitionsTable[partitionIndex].PID != PID)
+		partitionIndex++;
+
+	// Release the memory
+	partitionsTable[partitionIndex].PID = NOPROCESS;
+
+	// Log the memory release
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 145, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, programList[processTable[PID].programListIndex]->executableName);
+
+	// Log the partition table after releasing memory
+	OperatingSystem_ShowPartitionTable("after releasing memory");
 }
 
 // Assign initial values to all fields inside the PCB
@@ -499,7 +530,11 @@ void OperatingSystem_TerminateExecutingProcess()
 	// Track state changes
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, stateNames[processTable[executingProcessID].state], stateNames[EXIT]);
 
+	// Exit the process
 	processTable[executingProcessID].state = EXIT;
+
+	// Release the memory partition used by the process
+	OperatingSystem_ReleaseMainMemory(executingProcessID);
 
 	if (executingProcessID == sipID)
 	{
