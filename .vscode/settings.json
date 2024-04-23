@@ -10,6 +10,7 @@
     "v4"
   ],
   "files.associations": {
-    "computersystem.h": "c"
+    "computersystem.h": "c",
+    "*.def": "c"
   }
 }
