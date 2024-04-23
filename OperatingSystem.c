@@ -296,20 +296,20 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 	// * Find the best fit partition
 
 	int bestPartitionIndex = -1;
-	int numFreePartitions = 0;
+	int existsBigEnoughPartition = 0;
 
 	// Go through all partitions
 	for (int i = 0; i < PARTITIONTABLEMAXSIZE; i++)
 	{
-		// Skip partitions that were already allocated to other processes
-		if (partitionsTable[i].PID != NOPROCESS)
-			continue;
-
-		// Increase the number of free partitions found
-		numFreePartitions++;
-
 		// Skip partitions that are too small
 		if (partitionsTable[i].size < processSize)
+			continue;
+
+		// Register a big enough partition exists
+		existsBigEnoughPartition = 1;
+
+		// Skip partitions that were already allocated to other processes
+		if (partitionsTable[i].PID != NOPROCESS)
 			continue;
 
 		// If we have no partition yet, assign the first one that fits
@@ -327,7 +327,7 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID)
 	if (bestPartitionIndex == -1)
 	{
 		// If there were free partitions and the process was too big, return TOOBIGPROCESS
-		if (numFreePartitions > 0)
+		if (existsBigEnoughPartition == 0)
 			return TOOBIGPROCESS;
 		// If there were no free partitions, return MEMORYFULL
 		else
