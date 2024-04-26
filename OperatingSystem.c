@@ -733,8 +733,8 @@ void OperatingSystem_HandleClockInterrupt()
 
 	// If there are no unfinished tasks finish the process SIP to shutdown
 	if (numberOfNotTerminatedUserProcesses == 0 && numberOfProgramsInArrivalTimeQueue == 0)
-		// Terminate SIP
-		OperatingSystem_TerminateExecutingProcess();
+		// Telling SIP we are ready to shutdown
+		OperatingSystem_ReadyToShutdown();
 
 	// * Preempting executing process
 
