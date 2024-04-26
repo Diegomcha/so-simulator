@@ -29,6 +29,16 @@ enum INT_BITS
 	CLOCKINT_BIT = 9
 };
 
+// V4-1a
+// Enumerated types of exceptions
+enum EXCEPTIONS
+{
+	DIVISIONBYZERO,
+	INVALIDPROCESSORMODE,
+	INVALIDADDRESS,
+	INVALIDINSTRUCTION
+};
+
 // Functions prototypes
 void Processor_InitializeInterruptVectorTable(int);
 int Processor_FetchInstruction();

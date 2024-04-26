@@ -6,9 +6,11 @@
     "v0",
     "v1",
     "v2",
-    "v3"
+    "v3",
+    "v4"
   ],
   "files.associations": {
-    "computersystem.h": "c"
+    "computersystem.h": "c",
+    "*.def": "c"
   }
 }

@@ -15,113 +15,144 @@ int registerMAR_MMU;
 // The CTRL register
 int registerCTRL_MMU;
 
-void MMU_SetCTRL (int ctrl) {
-	registerCTRL_MMU=ctrl&0x3;
-	switch (registerCTRL_MMU) {
-  	case CTRLREAD:
-			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)){ // Protected mode
-				if (registerMAR_MMU < MAINMEMORYSIZE){
-					// Send to the main memory HW the physical address to write in
-					Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
-					// Tell the main memory HW to read
-					// registerCTRL_MMU is CTRLREAD 
-					Buses_write_ControlBus_From_To(MMU,MAINMEMORY);
-					// Success
-			  		registerCTRL_MMU |= CTRL_SUCCESS;
-				}
-				else {
-					// Fail
-					registerCTRL_MMU |= CTRL_FAIL;
-				}
+void MMU_SetCTRL(int ctrl)
+{
+	// Keep track of whether the MMU failed or not
+	int failed = 0;
+
+	registerCTRL_MMU = ctrl & 0x3;
+	switch (registerCTRL_MMU)
+	{
+	case CTRLREAD:
+		if (Processor_PSW_BitState(EXECUTION_MODE_BIT))
+		{ // Protected mode
+			if (0 <= registerMAR_MMU && registerMAR_MMU < MAINMEMORYSIZE)
+			{
+				// Send to the main memory HW the physical address to write in
+				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
+				// Tell the main memory HW to read
+				// registerCTRL_MMU is CTRLREAD
+				Buses_write_ControlBus_From_To(MMU, MAINMEMORY);
+				// Success
+				registerCTRL_MMU |= CTRL_SUCCESS;
 			}
-			else // Non-Protected mode
-				if (registerMAR_MMU<registerLimit_MMU) { 
-					// Physical address = logical address + base register
-					registerMAR_MMU+=registerBase_MMU;
-					// Send to the main memory HW the physical address to write in
-					Buses_write_AddressBus_From_To(MMU,MAINMEMORY);
-					// Tell the main memory HW to read
-					// registerCTRL_MMU is CTRLREAD 
-					Buses_write_ControlBus_From_To(MMU,MAINMEMORY);
-					// Success
-			  	registerCTRL_MMU |= CTRL_SUCCESS;
-				}
-				else {
-					// Fail
-					registerCTRL_MMU |= CTRL_FAIL;
-				}
-			break;
-  	case CTRLWRITE:
-			if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode
-				if (registerMAR_MMU < MAINMEMORYSIZE) {
-					// Send to the main memory HW the physical address to write in
-					Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
-					// Tell the main memory HW to read
-					// registerCTRL_MMU is CTRLWRITE 
-					Buses_write_ControlBus_From_To(MMU,MAINMEMORY);
-					// Success
-			  	registerCTRL_MMU |= CTRL_SUCCESS;
-				}
-				else {
-					// Fail
-					registerCTRL_MMU |= CTRL_FAIL;
-				}
-			else   // Non-Protected mode
-				if (registerMAR_MMU<registerLimit_MMU) {
-					// Physical address = logical address + base register
-					registerMAR_MMU+=registerBase_MMU;
-					// Send to the main memory HW the physical address to read from
-					Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
-					// Tell the main memory HW to write
-					// registerCTRL_MMU is CTRLWRITE 
-					Buses_write_ControlBus_From_To(MMU,MAINMEMORY);
-					// Success
-			  	registerCTRL_MMU |= CTRL_SUCCESS;
-				}
-				else {
-					// Fail
-					registerCTRL_MMU |= CTRL_FAIL;
-				}
-  			break;
-  		default:
+			else
+			{
+				// Fail
 				registerCTRL_MMU |= CTRL_FAIL;
-				break;
-  	}
-  	// registerCTRL_MMU return value was CTRL_SUCCESS or CTRL_FAIL
-  	Buses_write_ControlBus_From_To(MMU,CPU);
+				failed = 1;
+			}
+		}
+		else // Non-Protected mode
+			if (0 <= registerMAR_MMU && registerMAR_MMU < registerLimit_MMU)
+			{
+				// Physical address = logical address + base register
+				registerMAR_MMU += registerBase_MMU;
+				// Send to the main memory HW the physical address to write in
+				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
+				// Tell the main memory HW to read
+				// registerCTRL_MMU is CTRLREAD
+				Buses_write_ControlBus_From_To(MMU, MAINMEMORY);
+				// Success
+				registerCTRL_MMU |= CTRL_SUCCESS;
+			}
+			else
+			{
+				// Fail
+				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
+			}
+		break;
+	case CTRLWRITE:
+		if (Processor_PSW_BitState(EXECUTION_MODE_BIT)) // Protected mode
+			if (0 <= registerMAR_MMU && registerMAR_MMU < MAINMEMORYSIZE)
+			{
+				// Send to the main memory HW the physical address to write in
+				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
+				// Tell the main memory HW to read
+				// registerCTRL_MMU is CTRLWRITE
+				Buses_write_ControlBus_From_To(MMU, MAINMEMORY);
+				// Success
+				registerCTRL_MMU |= CTRL_SUCCESS;
+			}
+			else
+			{
+				// Fail
+				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
+			}
+		else // Non-Protected mode
+			if (0 <= registerMAR_MMU && registerMAR_MMU < registerLimit_MMU)
+			{
+				// Physical address = logical address + base register
+				registerMAR_MMU += registerBase_MMU;
+				// Send to the main memory HW the physical address to read from
+				Buses_write_AddressBus_From_To(MMU, MAINMEMORY);
+				// Tell the main memory HW to write
+				// registerCTRL_MMU is CTRLWRITE
+				Buses_write_ControlBus_From_To(MMU, MAINMEMORY);
+				// Success
+				registerCTRL_MMU |= CTRL_SUCCESS;
+			}
+			else
+			{
+				// Fail
+				registerCTRL_MMU |= CTRL_FAIL;
+				failed = 1;
+			}
+		break;
+	default:
+		registerCTRL_MMU |= CTRL_FAIL;
+		failed = 1;
+		break;
+	}
+
+	// registerCTRL_MMU return value was CTRL_SUCCESS or CTRL_FAIL
+	Buses_write_ControlBus_From_To(MMU, CPU);
+
+	// Raise exception whenever the MMU fails to compute the physical address
+	if (failed == 1)
+		Processor_RaiseException(INVALIDADDRESS);
 }
 
 // Getter for registerCTRL_MMU
-int MMU_GetCTRL () {
-  return registerCTRL_MMU;
+int MMU_GetCTRL()
+{
+	return registerCTRL_MMU;
 }
 
 // Setter for registerMAR_MMU
-void MMU_SetMAR (int newMAR) {
-  registerMAR_MMU = newMAR;
+void MMU_SetMAR(int newMAR)
+{
+	registerMAR_MMU = newMAR;
 }
 
 // Getter for registerMAR_MMU
-int MMU_GetMAR () {
-  return registerMAR_MMU;
+int MMU_GetMAR()
+{
+	return registerMAR_MMU;
 }
 
 // Setter for registerBase_MMU
-void MMU_SetBase (int newBase) {
-  registerBase_MMU = newBase;
+void MMU_SetBase(int newBase)
+{
+	registerBase_MMU = newBase;
 }
 
 // Getter for registerBase_MMU
-int MMU_GetBase () {
-  return registerBase_MMU;
+int MMU_GetBase()
+{
+	return registerBase_MMU;
 }
 
 // Setter for registerLimit_MMU
-void MMU_SetLimit (int newLimit) {
-  registerLimit_MMU = newLimit;
+void MMU_SetLimit(int newLimit)
+{
+	registerLimit_MMU = newLimit;
 }
 
 // Getter for registerLimit_MMU
-int MMU_GetLimit () {
-  return registerLimit_MMU;
+int MMU_GetLimit()
+{
+	return registerLimit_MMU;
 }

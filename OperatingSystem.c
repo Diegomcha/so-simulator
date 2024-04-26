@@ -21,7 +21,8 @@ void OperatingSystem_TerminateExecutingProcess();
 int OperatingSystem_LongTermScheduler();
 void OperatingSystem_PreemptRunningProcess();
 int OperatingSystem_CreateProcess(int);
-int OperatingSystem_ObtainMainMemory(int, int);
+int OperatingSystem_ObtainMainMemory(int);
+void OperatingSystem_ReleaseMainMemory(int);
 int OperatingSystem_ShortTermScheduler();
 int OperatingSystem_ExtractFromReadyToRun();
 void OperatingSystem_HandleException();
@@ -47,6 +48,9 @@ int executingProcessID = NOPROCESS;
 
 // Identifier of the System Idle Process
 int sipID;
+
+// Number of partitions in the system
+int numberOfPartitions;
 
 // Initial PID for assignation (Not assigned)
 int initialPID = -1;
@@ -82,7 +86,8 @@ int PROCESSTABLEMAXSIZE = 4;
 int numberOfClockInterrupts = 0;
 
 // For debug messages
-char *statesNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
+char *stateNames[5] = {"NEW", "READY", "EXECUTING", "BLOCKED", "EXIT"};
+char *exceptionNames[4] = {"division by zero", "invalid processor mode", "invalid address", "invalid instruction"};
 
 // Initial set of tasks of the OS
 void OperatingSystem_Initialize(int programsFromFileIndex)
@@ -111,6 +116,10 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 	// Space for the sleeping processes queue
 	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
 
+	// Initialize partition table
+	numberOfPartitions = OperatingSystem_InitializePartitionTable();
+
+	// Start loading Operating System code
 	programFile = fopen("OperatingSystemCode", "r");
 	if (programFile == NULL)
 	{
@@ -208,6 +217,8 @@ int OperatingSystem_LongTermScheduler()
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "it does not exist");
 		else if (PID == PROGRAMNOTVALID)
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 104, ERROR, programList[i]->executableName, "invalid priority or size");
+		else if (PID == MEMORYFULL)
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 144, ERROR, programList[i]->executableName);
 		else
 		{ // Process successfully created
 			numberOfSuccessfullyCreatedProcesses++;
@@ -231,7 +242,7 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 {
 	int PID;
 	int processSize;
-	int loadingPhysicalAddress;
+	int partitionIndex;
 	int priority;
 	FILE *programFile;
 	PROGRAMS_DATA *executableProgram = programList[indexOfExecutableProgram];
@@ -256,18 +267,31 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	if (priority < 0)
 		return priority; // PROGRAMNOTVALID
 
-	// Obtain enough memory space if available
-	loadingPhysicalAddress = OperatingSystem_ObtainMainMemory(processSize, PID);
-	if (loadingPhysicalAddress < 0)
-		return loadingPhysicalAddress; // TOOBIGPROCESS
+	// * Obtain enough memory space if available & load program if possible
+
+	// Log the memory request and show the initial state of the partitions table
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 142, SYSMEM, PID, executableProgram->executableName, processSize);
+	OperatingSystem_ShowPartitionTable("before allocating memory");
+
+	// Obtain best partition
+	partitionIndex = OperatingSystem_ObtainMainMemory(processSize);
+	if (partitionIndex < 0)
+		return partitionIndex; // TOOBIGPROCESS, MEMORYFULL
 
 	// Load program in the allocated memory if possible
-	int loadStatus = OperatingSystem_LoadProgram(programFile, loadingPhysicalAddress, processSize);
+	int loadStatus = OperatingSystem_LoadProgram(programFile, partitionsTable[partitionIndex].initAddress, processSize);
 	if (loadStatus < 0)
 		return loadStatus; // TOOBIGPROCESS
 
-	// PCB initialization
-	OperatingSystem_PCBInitialization(PID, loadingPhysicalAddress, processSize, priority, indexOfExecutableProgram);
+	// Allocate partition & log the allocation
+	partitionsTable[partitionIndex].PID = PID;
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 143, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, executableProgram->executableName);
+
+	// * PCB initialization
+	OperatingSystem_PCBInitialization(PID, partitionsTable[partitionIndex].initAddress, processSize, priority, indexOfExecutableProgram);
+
+	// Show the updated state of the partitions table (here because this function relies on the process table entry)
+	OperatingSystem_ShowPartitionTable("after allocating memory");
 
 	// Removed for V3
 	// Show message "Process [PID] created from program [executableName]\n"
@@ -276,21 +300,81 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	return PID;
 }
 
-// Main memory is assigned in chunks. All chunks are the same size. A process
-// always obtains the chunk whose position in memory is equal to the processor identifier
-int OperatingSystem_ObtainMainMemory(int processSize, int PID)
+// Obtains a partition index from Main Memory if one is available
+int OperatingSystem_ObtainMainMemory(int processSize)
 {
-	if (processSize > MAINMEMORYSECTIONSIZE)
-		return TOOBIGPROCESS;
+	// * Find the best fit partition
 
-	return PID * MAINMEMORYSECTIONSIZE;
+	int bestPartitionIndex = -1;
+	int existsBigEnoughPartition = 0;
+
+	// Go through all partitions
+	for (int i = 0; i < numberOfPartitions; i++)
+	{
+		// Skip partitions that are too small
+		if (partitionsTable[i].size < processSize)
+			continue;
+
+		// Register a big enough partition exists
+		existsBigEnoughPartition = 1;
+
+		// Skip partitions that were already allocated to other processes
+		if (partitionsTable[i].PID != NOPROCESS)
+			continue;
+
+		// If we have no partition yet, assign the first one that fits
+		if (bestPartitionIndex == -1)
+			bestPartitionIndex = i;
+		// If the size of the partition fits and is lower than the best partition we found until now, change the partition
+		else if (partitionsTable[i].size < partitionsTable[bestPartitionIndex].size)
+			bestPartitionIndex = i;
+		// If the size matches, choose the one with the lowest address
+		else if (partitionsTable[i].size == partitionsTable[bestPartitionIndex].size && partitionsTable[i].initAddress < partitionsTable[bestPartitionIndex].initAddress)
+			bestPartitionIndex = i;
+	}
+
+	// If we were not able to find a fit
+	if (bestPartitionIndex == -1)
+	{
+		// If there were free partitions and the process was too big, return TOOBIGPROCESS
+		if (existsBigEnoughPartition == 0)
+			return TOOBIGPROCESS;
+		// If there were no free partitions, return MEMORYFULL
+		else
+			return MEMORYFULL;
+	}
+
+	// Return the best partition index
+	return bestPartitionIndex;
+}
+
+void OperatingSystem_ReleaseMainMemory(int PID)
+{
+	// Log the partition table before releasing memory
+	OperatingSystem_ShowPartitionTable("before releasing memory");
+
+	// Store the PID of the program which had the partition assigned
+	int partitionIndex = 0;
+
+	// Go through all partitions until finding the one assigned to the process
+	while (partitionsTable[partitionIndex].PID != PID)
+		partitionIndex++;
+
+	// Release the memory
+	partitionsTable[partitionIndex].PID = NOPROCESS;
+
+	// Log the memory release
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 145, SYSMEM, partitionIndex, partitionsTable[partitionIndex].initAddress, partitionsTable[partitionIndex].size, PID, programList[processTable[PID].programListIndex]->executableName);
+
+	// Log the partition table after releasing memory
+	OperatingSystem_ShowPartitionTable("after releasing memory");
 }
 
 // Assign initial values to all fields inside the PCB
 void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 111, SYSPROC, PID, statesNames[NEW], programList[processPLIndex]->executableName);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 111, SYSPROC, PID, stateNames[NEW], programList[processPLIndex]->executableName);
 
 	processTable[PID].busy = 1;
 	processTable[PID].initialPhysicalAddress = initialPhysicalAddress;
@@ -323,7 +407,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 void OperatingSystem_MoveToTheREADYState(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[READY]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, stateNames[processTable[PID].state], stateNames[READY]);
 
 	if (Heap_add(PID, readyToRunQueue[processTable[PID].queueID], QUEUE_PRIORITY, &(numberOfReadyToRunProcesses[processTable[PID].queueID])) >= 0)
 		processTable[PID].state = READY;
@@ -369,7 +453,7 @@ int OperatingSystem_ExtractFromReadyToRun()
 void OperatingSystem_Dispatch(int PID)
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, statesNames[processTable[PID].state], statesNames[EXECUTING]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName, stateNames[processTable[PID].state], stateNames[EXECUTING]);
 
 	//  The process identified by PID becomes the current executing process
 	executingProcessID = PID;
@@ -432,7 +516,7 @@ void OperatingSystem_SaveContext(int PID)
 void OperatingSystem_HandleException()
 {
 	// Show message "Process [executingProcessID] has generated an exception and is terminating\n"
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 71, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 140, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, exceptionNames[Processor_GetRegisterD()]);
 
 	OperatingSystem_TerminateExecutingProcess();
 
@@ -444,9 +528,13 @@ void OperatingSystem_HandleException()
 void OperatingSystem_TerminateExecutingProcess()
 {
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, stateNames[processTable[executingProcessID].state], stateNames[EXIT]);
 
+	// Exit the process
 	processTable[executingProcessID].state = EXIT;
+
+	// Release the memory partition used by the process
+	OperatingSystem_ReleaseMainMemory(executingProcessID);
 
 	if (executingProcessID == sipID)
 	{
@@ -552,6 +640,17 @@ void OperatingSystem_HandleSystemCall()
 		// Print general status
 		OperatingSystem_PrintStatus();
 		break;
+	// Handle invalid syscalls
+	default:
+		// Show message
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 141, INTERRUPT, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, systemCallID);
+
+		// Terminate process
+		OperatingSystem_TerminateExecutingProcess();
+
+		// Print general status
+		OperatingSystem_PrintStatus();
+		break;
 	}
 }
 
@@ -626,7 +725,7 @@ void OperatingSystem_HandleClockInterrupt()
 	}
 
 	// * Creating newly arrived process
-	wokenProcesses += OperatingSystem_LongTermScheduler();
+	OperatingSystem_LongTermScheduler();
 
 	// Log the general status if any process was woken up
 	if (wokenProcesses > 0)
@@ -673,7 +772,7 @@ void OperatingSystem_BlockRunningProcess()
 
 	// * Move executing process to the blocked state
 	// Track state changes
-	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, statesNames[processTable[executingProcessID].state], statesNames[BLOCKED]);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 110, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, stateNames[processTable[executingProcessID].state], stateNames[BLOCKED]);
 
 	// Add the process to the sleeping processes queue
 	if (Heap_add(executingProcessID, sleepingProcessesQueue, QUEUE_WAKEUP, &(numberOfSleepingProcesses)) >= 0)

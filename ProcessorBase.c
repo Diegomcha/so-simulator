@@ -1,4 +1,4 @@
-// V1
+// V4-studentsCode
 // Don't change this file !!!
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +22,7 @@ extern int registerSP_CPU; // Stack pointer register
 extern int interruptLines_CPU; // Processor interrupt lines
 extern int interruptVectorTable[];
 extern char pswmask []; 
+extern int registerD_CPU; // System register
 
 char *InstructionNames[] = {
 "NONEXISTING_INSTRUCTION",
@@ -337,4 +338,10 @@ int Processor_ToInstruction(char * operation) {
 		if (strcasecmp(InstructionNames[i],operation)==0)
 			return i;
 	return NONEXISTING_INST;
+}
+
+// Function to raise an exception. Used after Exercise 1 of V4
+void Processor_RaiseException(int typeOfException) { // V4-studentsCode
+	Processor_RaiseInterrupt(EXCEPTION_BIT);
+	registerD_CPU=typeOfException;
 }

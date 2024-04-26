@@ -1,4 +1,4 @@
-// V3-studentsCode
+// V4-studentsCode
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -44,6 +44,9 @@ char USER_PROGRAMS_FILE[MAXFILENAMELENGTH]="";
 	extern heapItem * arrivalTimeQueue;
 	extern int numberOfProgramsInArrivalTimeQueue;
 #endif
+
+// MemConfig file 
+char MEMCONFIG_FILE[MAXFILENAMELENGTH]="MemConfig";  // V4-studentsCode
 
 // Fill in the array named userProgramsList with the information given
 // by the user in the command line
