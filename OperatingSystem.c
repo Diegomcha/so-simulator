@@ -269,9 +269,8 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 
 	// * Obtain enough memory space if available & load program if possible
 
-	// Log the memory request and show the initial state of the partitions table
+	// Log the memory request
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 142, SYSMEM, PID, executableProgram->executableName, processSize);
-	OperatingSystem_ShowPartitionTable("before allocating memory");
 
 	// Obtain best partition
 	partitionIndex = OperatingSystem_ObtainMainMemory(processSize);
@@ -282,6 +281,9 @@ int OperatingSystem_CreateProcess(int indexOfExecutableProgram)
 	int loadStatus = OperatingSystem_LoadProgram(programFile, partitionsTable[partitionIndex].initAddress, processSize);
 	if (loadStatus < 0)
 		return loadStatus; // TOOBIGPROCESS
+
+	// Show the initial state of the partitions table
+	OperatingSystem_ShowPartitionTable("before allocating memory");
 
 	// Allocate partition & log the allocation
 	partitionsTable[partitionIndex].PID = PID;
