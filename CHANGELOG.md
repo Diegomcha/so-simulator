@@ -1,5 +1,32 @@
 # Changelog
 
+## [4.0.0](https://github.com/Diegomcha/so-simulator/compare/v3.0.0...v4.0.0) (2024-04-27)
+
+
+### Features
+
+* **v4:** :bricks: added V4 base files ([92cc93c](https://github.com/Diegomcha/so-simulator/commit/92cc93c37657da4795b7e7423f4eb5e9395c8af2))
+* **v4:** :sparkles: exercise 1 ([66c6637](https://github.com/Diegomcha/so-simulator/commit/66c6637d617a274f5d30d09a26379adb7769b15f))
+* **v4:** :sparkles: exercise 3 ([d5b13a8](https://github.com/Diegomcha/so-simulator/commit/d5b13a849d09f2d4f0309addf2aeafb07cf3fb10))
+* **v4:** :sparkles: exercise 4 ([d268c42](https://github.com/Diegomcha/so-simulator/commit/d268c42ed4aa0ba149021d798ecf25e1c0185b38))
+* **v4:** :sparkles: exercise 5 ([a4b37db](https://github.com/Diegomcha/so-simulator/commit/a4b37db6819b06dc0ddba2396067968410925290))
+* **v4:** :sparkles: exercise 6 ([a0f2469](https://github.com/Diegomcha/so-simulator/commit/a0f246969b545239f952f5be30556c7fdbbb2f70))
+* **v4:** :sparkles: exercises 7 & 8 and fixed exercise 6 ([ec353df](https://github.com/Diegomcha/so-simulator/commit/ec353df37209d3ff925d2f7f8630a6b09f6456cd))
+
+
+### Bug Fixes
+
+* **v3:** :bug: fixed sip not finishing properly ([#24](https://github.com/Diegomcha/so-simulator/issues/24)) ([600a793](https://github.com/Diegomcha/so-simulator/commit/600a7939ce5eb4cbf09b1fea2d1b080daa91e975))
+* **v4:** :bug: fixed code ObtainMainMemory to adjust to the wanted semantics ([820c13f](https://github.com/Diegomcha/so-simulator/commit/820c13fd9f7dc7c1d165ed208603ef283d365166))
+* **v4:** :bug: fixed previous exercises with tests ([7c77b43](https://github.com/Diegomcha/so-simulator/commit/7c77b437f933deaff46a622c5d7036fabfe90d33))
+* **v4:** :bug: fixed showing partition table unnecesarily ([a02d4cd](https://github.com/Diegomcha/so-simulator/commit/a02d4cdbee53cdda1f66b32ca278e869f88b6c03))
+* **v4:** :white_check_mark: udpated v4-1 output with fixes ([bf378cf](https://github.com/Diegomcha/so-simulator/commit/bf378cf0a28c813f17972061cbd377fb8b24e1be))
+
+
+### Miscellaneous Chores
+
+* **v4:** :bookmark: Release as V4 ([c0bf1bc](https://github.com/Diegomcha/so-simulator/commit/c0bf1bc74add75394ba9678cf8d400ff58f9d561))
+
 ## [3.0.0](https://github.com/Diegomcha/so-simulator/compare/v2.0.5...v3.0.0) (2024-04-15)
 
 
