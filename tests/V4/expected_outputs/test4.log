@@ -1,0 +1,11 @@
+	[22] Process [0 - test4-1] will transfer the control of the processor to process [1 - test4-2]
+	[41] Process [1 - test4-2] will transfer the control of the processor to process [0 - test4-1]
+[49] {0E 001 000} MOV 1 0 (PID: 0, PC: 5, Accumulator: 4, PSW: 0000 [----------------])
+	[52] Process [0 - test4-1] moving from the [EXECUTING] state to the [BLOCKED] state
+[60] {0E 001 000} MOV 1 0 (PID: 1, PC: 5, Accumulator: 2, PSW: 0000 [----------------])
+	[66] Process [1 - test4-2] moving from the [EXECUTING] state to the [BLOCKED] state
+	[72] Process [0 - test4-1] moving from the [BLOCKED] state to the [READY] state
+	[77] Process [1 - test4-2] moving from the [BLOCKED] state to the [READY] state
+	[81] Process [0 - test4-1] will transfer the control of the processor to process [1 - test4-2]
+	[96] Process [1 - test4-2] will transfer the control of the processor to process [0 - test4-1]
+[128] END of the simulation

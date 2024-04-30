@@ -1,0 +1,10 @@
+	[21] Process [6 - test3-1] will transfer the control of the processor to process [7 - test3-2]
+	[36] Process [7 - test3-2] will transfer the control of the processor to process [0 - test3-3]
+	[51] Process [0 - test3-3] will transfer the control of the processor to process [6 - test3-1]
+	[67] Process [6 - test3-1] will transfer the control of the processor to process [7 - test3-2]
+	[86] Process [7 - test3-2] will transfer the control of the processor to process [0 - test3-3]
+	[102] Process [0 - test3-3] will transfer the control of the processor to process [6 - test3-1]
+	[116] Process [6 - test3-1] has caused an exception (invalid processor mode) and is being terminated
+	[127] Process [7 - test3-2] has caused an exception (invalid processor mode) and is being terminated
+	[141] Process [0 - test3-3] has caused an exception (invalid processor mode) and is being terminated
+[153] END of the simulation

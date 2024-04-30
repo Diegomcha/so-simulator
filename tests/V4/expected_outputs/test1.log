@@ -1,0 +1,24 @@
+	[36] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[92] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[102] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[153] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[166] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[212] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[222] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[262] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[272] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[309] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[322] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[352] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[362] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[387] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[397] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[419] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[432] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[447] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[457] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[467] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[477] Process [2 - daemonTest3] moving from the [EXECUTING] state to the [BLOCKED] state
+	[483] Process [2 - daemonTest3] moving from the [BLOCKED] state to the [READY] state
+	[707] Process [0 - daemonTest1] moving from the [EXECUTING] state to the [BLOCKED] state
+[719] END of the simulation

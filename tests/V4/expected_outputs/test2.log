@@ -1,0 +1,4 @@
+	[17] Process [0 - test2-1] moving from the [EXECUTING] state to the [BLOCKED] state
+	[267] Process [0 - test2-1] moving from the [BLOCKED] state to the [READY] state
+	[352] ERROR: Program [iDontExist] is not valid [-- it does not exist --]
+[358] END of the simulation

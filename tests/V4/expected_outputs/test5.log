@@ -1,0 +1,11 @@
+	[0] Process [3] created into the [NEW] state, from program [SystemIdleProcess]
+	[0] Process [0] created into the [NEW] state, from program [daemonProgramHighPriority]
+	[6] Process [0 - daemonProgramHighPriority] moving from the [EXECUTING] state to the [BLOCKED] state
+	[12] Process [1] created into the [NEW] state, from program [test5-1]
+	[12] Process [3 - SystemIdleProcess] is thrown out of the processor by process [1 - test5-1]
+	[17] Process [1 - test5-1] moving from the [EXECUTING] state to the [BLOCKED] state
+	[27] Process [1 - test5-1] moving from the [BLOCKED] state to the [READY] state
+	[27] Process [3 - SystemIdleProcess] is thrown out of the processor by process [1 - test5-1]
+	[32] Process [0 - daemonProgramHighPriority] moving from the [BLOCKED] state to the [READY] state
+	[81] Process [0 - daemonProgramHighPriority] moving from the [EXECUTING] state to the [BLOCKED] state
+[93] END of the simulation
