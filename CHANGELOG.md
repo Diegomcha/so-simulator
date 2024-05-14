@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/Diegomcha/so-simulator/compare/v4.0.0...v4.0.1) (2024-05-14)
+
+
+### Miscellaneous Chores
+
+* **v4:** :bookmark: release 4.0.1 ([914cd9c](https://github.com/Diegomcha/so-simulator/commit/914cd9cdfc799ac9717d977879ff20a02c651f85))
+
 ## [4.0.0](https://github.com/Diegomcha/so-simulator/compare/v3.0.0...v4.0.0) (2024-04-27)
 
 
