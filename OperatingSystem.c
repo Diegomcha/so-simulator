@@ -32,6 +32,7 @@ void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_BlockRunningProcess();
 int OperatingSystem_ExtractReadyFromSleepingQueue();
 int OperatingSystem_PeekReadyToRunQueue();
+void OperatingSystem_EnsureConsistentState();
 
 // The process table
 // PCB processTable[PROCESSTABLEMAXSIZE];
@@ -73,6 +74,9 @@ char *queueNames[NUMBEROFQUEUES] = {"USER", "DAEMONS"};
 
 // Variable containing the number of not terminated user processes
 int numberOfNotTerminatedUserProcesses = 0;
+
+// Stores the number of created processes during the last LTS execution
+int numberOfCreatedProcesses = 0;
 
 // char DAEMONS_PROGRAMS_FILE[MAXFILENAMELENGTH]="teachersDaemons";
 
@@ -196,8 +200,8 @@ void OperatingSystem_Initialize(int programsFromFileIndex)
 // 			command line and daemons programs
 int OperatingSystem_LongTermScheduler()
 {
-	int PID, i,
-		numberOfSuccessfullyCreatedProcesses = 0;
+	int PID, i;
+	numberOfCreatedProcesses = 0;
 
 	// While there are new programs that need to be created create them
 	while (OperatingSystem_IsThereANewProgram() == YES)
@@ -221,7 +225,7 @@ int OperatingSystem_LongTermScheduler()
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 144, ERROR, programList[i]->executableName);
 		else
 		{ // Process successfully created
-			numberOfSuccessfullyCreatedProcesses++;
+			numberOfCreatedProcesses++;
 			if (programList[i]->type == USERPROGRAM)
 				numberOfNotTerminatedUserProcesses++;
 			// Move process to the ready state
@@ -230,11 +234,11 @@ int OperatingSystem_LongTermScheduler()
 	}
 
 	// If any process was created print the general status
-	if (numberOfSuccessfullyCreatedProcesses)
+	if (numberOfCreatedProcesses)
 		OperatingSystem_PrintStatus();
 
 	// Return the number of succesfully created processes
-	return numberOfSuccessfullyCreatedProcesses;
+	return numberOfCreatedProcesses;
 }
 
 // This function creates a process from an executable program
@@ -642,6 +646,26 @@ void OperatingSystem_HandleSystemCall()
 		// Print general status
 		OperatingSystem_PrintStatus();
 		break;
+	// Handle executeLTS
+	case SYSCALL_EXECUTELTS:
+		// Check during the last LTS no process was created
+		if (numberOfCreatedProcesses > 0)
+			break;
+
+		// Ensure the executing process is a daemon
+		if (processTable[executingProcessID].queueID != DAEMONSQUEUE)
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 147, EXAM, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+		else
+		{
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 146, EXAM, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName);
+
+			// * Execute LTS
+			OperatingSystem_LongTermScheduler();
+
+			// * Ensure the system stays in a consistent state
+			OperatingSystem_EnsureConsistentState();
+		}
+		break;
 	// Handle invalid syscalls
 	default:
 		// Show message
@@ -733,37 +757,8 @@ void OperatingSystem_HandleClockInterrupt()
 	if (wokenProcesses > 0)
 		OperatingSystem_PrintStatus();
 
-	// If there are no unfinished tasks finish the process SIP to shutdown
-	if (numberOfNotTerminatedUserProcesses == 0 && numberOfProgramsInArrivalTimeQueue == 0)
-		// Telling SIP we are ready to shutdown
-		OperatingSystem_ReadyToShutdown();
-
-	// * Preempting executing process
-
-	// Check whether the executing process has to be preempted
-	PID = OperatingSystem_PeekReadyToRunQueue();
-
-	// If the executing process exists, check if it must be preempted (higher queue/priority process)
-	if (PID != NOPROCESS &&
-		(processTable[PID].queueID < processTable[executingProcessID].queueID ||   // Queue is higher priority
-		 (processTable[PID].queueID == processTable[executingProcessID].queueID && // OR queue is the same with higher priority
-		  processTable[PID].priority < processTable[executingProcessID].priority)))
-	{
-		// Log what is going to happen
-		ComputerSystem_DebugMessage(TIMED_MESSAGE, 121, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
-
-		// Preempt the running process
-		OperatingSystem_PreemptRunningProcess();
-
-		// Extract the process from the queue
-		OperatingSystem_ExtractFromReadyToRun(); // PID is the same so there is no need to update the variable
-
-		// Dispatch the next process in the queue
-		OperatingSystem_Dispatch(PID);
-
-		// Log the general status
-		OperatingSystem_PrintStatus();
-	}
+	// * Ensure the system stays in a consistent state
+	OperatingSystem_EnsureConsistentState();
 }
 
 // Blocks the running process
@@ -820,4 +815,41 @@ int OperatingSystem_PeekReadyToRunQueue()
 
 	// Return most priority process or NOPROCESS if empty queue
 	return selectedProcess;
+}
+
+// This function ensures that the OS stays in a consistent state after any process changes
+void OperatingSystem_EnsureConsistentState()
+{
+	// If there are no unfinished tasks finish the process SIP to shutdown
+	if (numberOfNotTerminatedUserProcesses == 0 && numberOfProgramsInArrivalTimeQueue == 0)
+		// Telling SIP we are ready to shutdown
+		OperatingSystem_ReadyToShutdown();
+
+	else
+	{
+		// Check whether the executing process has to be preempted
+		int PID = OperatingSystem_PeekReadyToRunQueue();
+
+		// If the executing process exists, check if it must be preempted (higher queue/priority process)
+		if (PID != NOPROCESS &&
+			(processTable[PID].queueID < processTable[executingProcessID].queueID ||   // Queue is higher priority
+			 (processTable[PID].queueID == processTable[executingProcessID].queueID && // OR queue is the same with higher priority
+			  processTable[PID].priority < processTable[executingProcessID].priority)))
+		{
+			// Log what is going to happen
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 121, SHORTTERMSCHEDULE, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName, PID, programList[processTable[PID].programListIndex]->executableName);
+
+			// Preempt the running process
+			OperatingSystem_PreemptRunningProcess();
+
+			// Extract the process from the queue
+			OperatingSystem_ShortTermScheduler(); // PID is the same so there is no need to update the variable
+
+			// Dispatch the next process in the queue
+			OperatingSystem_Dispatch(PID);
+
+			// Log the general status
+			OperatingSystem_PrintStatus();
+		}
+	}
 }

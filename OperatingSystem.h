@@ -57,7 +57,8 @@ enum SystemCallIdentifiers
 	SYSCALL_END = 3,
 	SYSCALL_YIELD = 4,
 	SYSCALL_PRINTEXECPID = 5,
-	SYSCALL_SLEEP = 7
+	SYSCALL_SLEEP = 7,
+	SYSCALL_EXECUTELTS = 9
 };
 
 // A PCB contains all of the information about a process that is needed by the OS

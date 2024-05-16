@@ -25,3 +25,5 @@
 143,Partition [@G%d@@: @G%d@@ -> @G%d@@] has been assigned to process [@G%d - %s@@]\n
 144,@RERROR: A process could not be created from program [%s] because an appropriate partition is not available@@\n
 145,Partition [@G%d@@: @G%d@@ -> @G%d@@] used by process [@G%d - %s@@] has been released\n
+146,@MProcess [%d - %s] will make an EXECUTE-LTS Syscall@@\n
+147,@MProcess [%d - %s] made a not allowed EXECUTE-LTS Syscall@@\n

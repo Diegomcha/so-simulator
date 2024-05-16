@@ -1,8 +1,8 @@
 // System Idle Process
-// run NOP + JUMP to NOP indefinitely
+// run TRAP 9 + JUMP to TRAP 9 indefinitely
 4  // Program size in memory cells
 100 // Priority of process (very low priority)
-ADD 1505 819
-NOP
+ADD 1202 1103
+TRAP 9
 JUMP -1  // Jump to NOP
 TRAP 3
