@@ -32,6 +32,8 @@ void OperatingSystem_HandleClockInterrupt();
 void OperatingSystem_BlockRunningProcess();
 int OperatingSystem_ExtractReadyFromSleepingQueue();
 int OperatingSystem_PeekReadyToRunQueue();
+int OperatingSystem_GetProcessPartition();
+void OperatingSystem_BumpProcessesWithInternalFrag();
 
 // The process table
 // PCB processTable[PROCESSTABLEMAXSIZE];
@@ -710,6 +712,9 @@ void OperatingSystem_HandleClockInterrupt()
 	// Log clock interrupt
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 120, INTERRUPT, ++numberOfClockInterrupts);
 
+	// * Bump blocked process priorities if >25% internal frag
+	OperatingSystem_BumpProcessesWithInternalFrag();
+
 	// * Waking up processes
 
 	// Store the PID of the process to wake up, the number of woken processes & whether the executing process must be preempted
@@ -820,4 +825,48 @@ int OperatingSystem_PeekReadyToRunQueue()
 
 	// Return most priority process or NOPROCESS if empty queue
 	return selectedProcess;
+}
+
+// Gets the partition the process of the provided PID has
+int OperatingSystem_GetProcessPartition(int PID)
+{
+	for (int pId = 0; pId < numberOfPartitions; pId++)
+		if (partitionsTable[pId].PID == PID)
+			return pId;
+
+	// This should not happen
+	return -1;
+}
+
+void OperatingSystem_BumpProcessesWithInternalFrag()
+{
+	// Stores the numberOfSleepingProcesses just in case the heap is shortened
+	int oldNumOfSleepingProcesses = numberOfSleepingProcesses;
+	// Checks whether the heap has been changed
+	int changed = 0;
+
+	for (int i = 0; i < oldNumOfSleepingProcesses; i++)
+	{
+		int PID = sleepingProcessesQueue[i].info;
+		int partitionIndex = OperatingSystem_GetProcessPartition(PID);
+		float internalFrag = 100 * (1 - (((float)processTable[PID].processSize) / partitionsTable[partitionIndex].size));
+
+		// Check if must/can be bumped
+		if (internalFrag > 25 && processTable[PID].priority >= 5)
+		{
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 146, EXAM, PID, programList[processTable[PID].programListIndex]->executableName, processTable[PID].priority, processTable[PID].priority - 5, partitionIndex, internalFrag);
+			processTable[PID].priority -= 5;
+
+			// Trim the heap if its first change
+			if (changed == 0)
+			{
+				numberOfSleepingProcesses = i;
+				changed = 1;
+			}
+		}
+
+		// Re add the element
+		if (changed == 1)
+			Heap_add(PID, sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses);
+	}
 }
